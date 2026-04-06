@@ -594,6 +594,12 @@
       transform: translateY(-2px);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 12px 22px rgba(82,66,35,.18);
     }
+    .pano-chip-active {
+      border-color: var(--green) !important;
+      box-shadow: 0 0 0 2px var(--green), 0 8px 18px rgba(26,107,58,.18) !important;
+      background: #f0faf4 !important;
+    }
+    .pano-chip-active .pano-label { color: var(--green); }
 
     .pano-icon {
       display: inline-flex;
@@ -3511,15 +3517,41 @@ document.getElementById('mm-logout-btn').addEventListener('click', () => {
 });
 
 /* ─────────────────────────────────────────────────────────
-   CATEGORY TABS
+   CATEGORY TABS + PANO CHIPS — filter in-place, no reload
    ───────────────────────────────────────────────────────── */
+function selectCategory(cat) {
+  _activeCat = cat;
+  /* Update active state on cat-tabs */
+  document.querySelectorAll('.cat-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.cat === cat)
+  );
+  /* Update active state on pano-chips */
+  document.querySelectorAll('.pano-chip').forEach(chip => {
+    const chipCat = new URLSearchParams(chip.getAttribute('href').split('?')[1]).get('cat');
+    chip.classList.toggle('pano-chip-active', chipCat === cat);
+  });
+  const products = lsGet('dd_products', null) || _sd.products || DEFAULT_PRODUCTS;
+  renderProductGrid(products, cat);
+  /* Update URL without reloading */
+  const newUrl = cat === 'all'
+    ? window.location.pathname + '#shop'
+    : `${window.location.pathname}?cat=${cat}#shop`;
+  history.pushState({ cat }, '', newUrl);
+  /* Scroll to shop section */
+  document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
+}
+
 document.querySelectorAll('.cat-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    _activeCat = tab.dataset.cat;
-    const products = lsGet('dd_products', null) || _sd.products || DEFAULT_PRODUCTS;
-    renderProductGrid(products, _activeCat);
+  tab.addEventListener('click', () => selectCategory(tab.dataset.cat));
+});
+
+/* Intercept pano-chip clicks — filter in-place instead of navigating */
+document.querySelectorAll('.pano-chip').forEach(chip => {
+  chip.addEventListener('click', e => {
+    e.preventDefault();
+    const params = new URLSearchParams(chip.getAttribute('href').split('?')[1] || '');
+    const cat = params.get('cat') || 'all';
+    selectCategory(cat);
   });
 });
 
@@ -3534,6 +3566,10 @@ function applyCategoryFromQuery() {
   _activeCat = queryCat;
   document.querySelectorAll('.cat-tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.cat === queryCat);
+  });
+  document.querySelectorAll('.pano-chip').forEach(chip => {
+    const chipCat = new URLSearchParams(chip.getAttribute('href').split('?')[1]).get('cat');
+    chip.classList.toggle('pano-chip-active', chipCat === queryCat);
   });
 }
 
