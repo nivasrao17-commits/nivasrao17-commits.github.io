@@ -559,15 +559,28 @@
   }
 
   async function loadFromFirestore() {
-    const [fsProd, fsBiz, fsZones, fsTests, fsNextId] = await Promise.all([
-      fsGet('products'), fsGet('business'), fsGet('zones'), fsGet('testimonials'), fsGet('next_id')
-    ]);
-    products     = fsProd  || _sd.products || DEFAULT_PRODUCTS;
-    business     = fsBiz   || _sd.business || DEFAULT_BUSINESS;
-    zones        = fsZones || _sd.zones    || DEFAULT_ZONES;
-    testimonials = fsTests || _sd.testimonials || DEFAULT_TESTIMONIALS;
-    nextId       = fsNextId || get('dd_next_id', 100);
-    initAll(); // re-render everything with Firestore data
+    try {
+      const [fsProd, fsBiz, fsZones, fsTests, fsNextId] = await Promise.all([
+        fsGet('products'), fsGet('business'), fsGet('zones'), fsGet('testimonials'), fsGet('next_id')
+      ]);
+      console.log('Firestore products:', fsProd ? fsProd.length : 'null',
+                   '| site-data products:', _sd.products ? _sd.products.length : 'null',
+                   '| DEFAULT_PRODUCTS:', DEFAULT_PRODUCTS.length);
+      products     = fsProd  || _sd.products || DEFAULT_PRODUCTS;
+      business     = fsBiz   || _sd.business || DEFAULT_BUSINESS;
+      zones        = fsZones || _sd.zones    || DEFAULT_ZONES;
+      testimonials = fsTests || _sd.testimonials || DEFAULT_TESTIMONIALS;
+      nextId       = fsNextId || get('dd_next_id', 100);
+      console.log('Loaded products count:', products.length);
+      initAll();
+    } catch (err) {
+      console.error('loadFromFirestore error:', err);
+      products = _sd.products || DEFAULT_PRODUCTS;
+      business = _sd.business || DEFAULT_BUSINESS;
+      zones    = _sd.zones    || DEFAULT_ZONES;
+      testimonials = _sd.testimonials || DEFAULT_TESTIMONIALS;
+      initAll();
+    }
   }
   let adminPassHash = get('dd_admin_pass_hash', null); // SHA-256 hex string
 
