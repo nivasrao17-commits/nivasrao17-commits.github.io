@@ -436,10 +436,25 @@
     .mm-logged-in-only.visible { display: flex; }
 
     @media (max-width: 768px) {
-      .navbar-left .location-btn, .navbar-center, .navbar-right .login-btn { display: none; }
+      .navbar-left .location-btn, .navbar-right .login-btn { display: none; }
       .hamburger { display: inline-flex; }
-      .navbar-inner { min-height: 60px; padding: 10px 12px; }
-      .navbar-right { margin-left: 0; }
+      .navbar-inner {
+        min-height: 60px;
+        padding: 10px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .navbar-left { width: auto; flex-shrink: 0; }
+      .navbar-right { margin-left: auto; }
+      .navbar-center {
+        order: 3;
+        width: 100%;
+        padding: 0 0 8px;
+      }
+      .nav-search {
+        max-width: 100%;
+        width: 100%;
+      }
       .floating-cart-btn { min-height: 40px; font-size: 14px; }
     }
 
