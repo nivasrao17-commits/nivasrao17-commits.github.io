@@ -553,18 +553,18 @@
 
     .hero-pano-row {
       display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
       gap: 12px;
       overflow-x: auto;
-      padding: 10px 6px 14px;
-      margin-bottom: 6px;
+      padding: 16px 16px 18px;
+      margin: 0 auto 24px;
       scrollbar-width: none;
       -ms-overflow-style: none;
       scroll-snap-type: x mandatory;
       position: relative;
-      width: auto;
+      width: 100%;
       max-width: 1300px;
-      margin-left: auto;
-      margin-right: auto;
       background: rgba(255,255,255,.97);
       border: 1px solid rgba(0,0,0,.08);
       border-radius: 18px;
@@ -1813,7 +1813,19 @@
       <div class="float-badge float-badge-3">🔥 Trending: Haldiram's Bhujia</div>
     </div>
 
-    <!-- Category bar moved below hero content -->
+  </div>
+  </div>
+
+  <a href="#how-it-works" class="scroll-indicator" aria-label="Scroll to How It Works">▼</a>
+</section>
+<hr class="section-divider">
+
+<!-- ============================
+     SHOP
+     ============================ -->
+<section id="shop">
+  <div class="container">
+    <!-- Panoramic category bar -->
     <div class="hero-pano-row reveal" aria-label="All product categories">
       <a class="pano-chip" href="?cat=all#shop"><span class="pano-icon">🏪</span><span class="pano-label">All</span></a>
       <a class="pano-chip" href="?cat=fruits#shop"><span class="pano-icon">🥬</span><span class="pano-label">Fruits &amp; Veg</span></a>
@@ -1830,18 +1842,7 @@
       <a class="pano-chip" href="?cat=frozen#shop"><span class="pano-icon">❄️</span><span class="pano-label">Frozen</span></a>
       <a class="pano-chip" href="?cat=dairy#shop"><span class="pano-icon">🥛</span><span class="pano-label">Dairy</span></a>
     </div>
-  </div>
-  </div>
 
-  <a href="#how-it-works" class="scroll-indicator" aria-label="Scroll to How It Works">▼</a>
-</section>
-<hr class="section-divider">
-
-<!-- ============================
-     SHOP
-     ============================ -->
-<section id="shop">
-  <div class="container">
     <p class="section-label reveal">— Fresh &amp; Authentic —</p>
 
     <div class="products-grid" id="products-grid">
