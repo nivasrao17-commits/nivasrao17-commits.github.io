@@ -1653,6 +1653,101 @@
       color: #fff; font-size: 12px; font-weight: 700; display: flex;
       align-items: center; justify-content: center;
     }
+
+    /* ============================
+       PRODUCT DETAIL POPUP
+       ============================ */
+    #product-popup {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.55); z-index: 8000;
+      align-items: flex-start; justify-content: center;
+      overflow-y: auto; padding: 20px 16px 48px;
+    }
+    #product-popup.open { display: flex; }
+
+    .product-popup-inner {
+      background: #fff; border-radius: 20px;
+      width: 100%; max-width: 480px;
+      position: relative; overflow: hidden;
+      margin-top: 56px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+
+    .popup-back-btn {
+      position: absolute; top: 12px; left: 12px;
+      background: rgba(255,255,255,.92); border: none; border-radius: 50%;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; cursor: pointer; z-index: 3;
+      box-shadow: 0 2px 10px rgba(0,0,0,.18); backdrop-filter: blur(4px);
+      transition: background .15s;
+    }
+    .popup-back-btn:hover { background: #fff; }
+
+    .popup-product-img {
+      width: 100%; aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 80px; position: relative; overflow: hidden;
+    }
+    .popup-product-img img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .popup-product-body { padding: 20px 20px 16px; }
+    .popup-product-tag {
+      display: inline-block; background: var(--saffron); color: #fff;
+      font-size: 11px; font-family: var(--font-heading); font-weight: 700;
+      padding: 2px 10px; border-radius: 20px; margin-bottom: 8px;
+    }
+    .popup-product-name {
+      font-family: var(--font-heading); font-weight: 700; font-size: 20px;
+      color: var(--charcoal); line-height: 1.3; margin-bottom: 4px;
+    }
+    .popup-product-brand { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .popup-product-price {
+      font-family: var(--font-heading); font-weight: 800;
+      font-size: 28px; color: var(--saffron); margin-bottom: 18px;
+    }
+    .popup-add-btn {
+      width: 100%; background: var(--green); color: #fff; border: none;
+      border-radius: 12px; padding: 15px;
+      font-family: var(--font-heading); font-weight: 700; font-size: 17px;
+      cursor: pointer; transition: background .2s, transform .1s;
+    }
+    .popup-add-btn:hover { background: #145a30; transform: translateY(-1px); }
+
+    .popup-suggestions {
+      padding: 18px 20px 22px; border-top: 1px solid #f0f0f0;
+    }
+    .popup-suggestions-title {
+      font-family: var(--font-heading); font-weight: 700; font-size: 15px;
+      color: var(--charcoal); margin-bottom: 14px;
+    }
+    .popup-suggestions-row {
+      display: flex; gap: 10px; overflow-x: auto;
+      scrollbar-width: none; padding-bottom: 4px;
+    }
+    .popup-suggestions-row::-webkit-scrollbar { display: none; }
+    .popup-sugg-card {
+      flex: 0 0 110px; background: #f9f9f9; border-radius: 12px;
+      overflow: hidden; cursor: pointer; border: 1px solid #eee;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .popup-sugg-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.1); }
+    .popup-sugg-img {
+      width: 100%; aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; position: relative; overflow: hidden;
+    }
+    .popup-sugg-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .popup-sugg-info { padding: 6px 8px 8px; }
+    .popup-sugg-name {
+      font-size: 10px; font-family: var(--font-heading); font-weight: 600;
+      color: var(--charcoal); line-height: 1.3; margin-bottom: 2px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .popup-sugg-price {
+      font-size: 11px; font-family: var(--font-heading); font-weight: 700; color: var(--saffron);
+    }
   </style>
 </head>
 <body>
@@ -2518,7 +2613,7 @@ function renderProductGrid(products, cat) {
     const safeTag = escapeHtml(p.tag || '');
     const safeEmoji = escapeHtml(p.emoji || '🛒');
 
-    return `<div class="product-card" data-cat="${p.cat}">
+    return `<div class="product-card" data-cat="${p.cat}" data-id="${p.id}">
       <div class="product-img-ph ${p.bg || 'bg1'}">
         ${p.tag ? `<span class="product-tag">${safeTag}</span>` : ''}
         ${p.photo ? `<img src="${p.photo}" alt="${safeName}" loading="lazy">` : safeEmoji}
@@ -2558,9 +2653,13 @@ function renderProductGrid(products, cat) {
       : '<p style="text-align:center;color:var(--muted);padding:40px 0">No products in this category yet.</p>';
   }
 
+  /* Store all products for popup use */
+  _allProductsForPopup = products;
+
   /* Attach add-to-cart listeners after render */
   grid.querySelectorAll('.add-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation(); // prevent card click from firing
       cartAdd(
         Number(this.dataset.id),
         this.dataset.name,
@@ -2572,6 +2671,13 @@ function renderProductGrid(products, cat) {
       this.textContent = '✓ Added';
       this.style.background = '#145a30';
       setTimeout(() => { this.textContent = orig; this.style.background = ''; }, 1500);
+    });
+  });
+
+  /* Attach card click to open popup */
+  grid.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('click', function() {
+      openProductPopup(this.dataset.id);
     });
   });
 }
@@ -3608,6 +3714,104 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 /* ─────────────────────────────────────────────────────────
    BOOT — load all admin data on first render
    ───────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   PRODUCT DETAIL POPUP
+   ───────────────────────────────────────────────────────── */
+let _allProductsForPopup = [];
+
+function openProductPopup(productId) {
+  const p = _allProductsForPopup.find(x => String(x.id) === String(productId));
+  if (!p) return;
+
+  const { brand, size } = getBrandSizeParts(p.brand || '');
+  const safeName = escapeHtml(p.name || '');
+  const safeEmoji = p.emoji || '🛒';
+  const bgClass = p.bg || 'bg1';
+
+  // Image
+  const imgEl = document.getElementById('popup-product-img');
+  imgEl.className = `popup-product-img ${bgClass}`;
+  imgEl.innerHTML = p.photo
+    ? `<img src="${p.photo}" alt="${safeName}" loading="lazy">`
+    : safeEmoji;
+
+  // Tag badge
+  const tagWrap = document.getElementById('popup-product-tag-wrap');
+  tagWrap.innerHTML = p.tag
+    ? `<span class="popup-product-tag">${escapeHtml(p.tag)}</span>`
+    : '';
+
+  // Details
+  document.getElementById('popup-product-name').textContent = p.name || '';
+  document.getElementById('popup-product-brand').textContent =
+    [brand, size].filter(Boolean).join(' · ');
+  document.getElementById('popup-product-price').textContent =
+    `$${Number(p.price).toFixed(2)}`;
+
+  // Add to cart
+  const addBtn = document.getElementById('popup-add-btn');
+  addBtn.textContent = '+ Add to Cart';
+  addBtn.style.background = '';
+  addBtn.onclick = () => {
+    cartAdd(Number(p.id), p.name, Number(p.price), safeEmoji, size || '');
+    addBtn.textContent = '✓ Added to Cart!';
+    addBtn.style.background = '#145a30';
+    setTimeout(() => {
+      addBtn.textContent = '+ Add to Cart';
+      addBtn.style.background = '';
+    }, 1500);
+  };
+
+  // Suggestions — same category, exclude current
+  const suggestions = _allProductsForPopup
+    .filter(x => x.cat === p.cat && String(x.id) !== String(productId))
+    .slice(0, 12);
+  const suggSection = document.getElementById('popup-suggestions');
+  const suggRow = document.getElementById('popup-suggestions-row');
+  if (suggestions.length) {
+    suggSection.style.display = '';
+    suggRow.innerHTML = suggestions.map(s => {
+      const { size: ss } = getBrandSizeParts(s.brand || '');
+      const sEmoji = s.emoji || '🛒';
+      return `<div class="popup-sugg-card" data-sugg-id="${s.id}">
+        <div class="popup-sugg-img ${s.bg || 'bg1'}">${s.photo
+          ? `<img src="${s.photo}" alt="${escapeHtml(s.name)}" loading="lazy">`
+          : sEmoji}</div>
+        <div class="popup-sugg-info">
+          <div class="popup-sugg-name">${escapeHtml(s.name || '')}</div>
+          <div class="popup-sugg-price">$${Number(s.price).toFixed(2)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    suggRow.querySelectorAll('.popup-sugg-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.getElementById('product-popup').scrollTop = 0;
+        openProductPopup(card.dataset.suggId);
+      });
+    });
+  } else {
+    suggSection.style.display = 'none';
+  }
+
+  // Show popup, scroll to top, lock body
+  document.getElementById('product-popup').scrollTop = 0;
+  document.getElementById('product-popup').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProductPopup() {
+  document.getElementById('product-popup').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('popup-back-btn').addEventListener('click', closeProductPopup);
+document.getElementById('product-popup').addEventListener('click', function(e) {
+  if (e.target === this) closeProductPopup();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeProductPopup();
+});
+
 applyCategoryFromQuery();
 loadAdminData();
 
@@ -3617,6 +3821,27 @@ if (!localStorage.getItem('desi_dash_delivery')) {
 }
 
 </script>
+
+<!-- ============================
+     PRODUCT DETAIL POPUP
+     ============================ -->
+<div id="product-popup" role="dialog" aria-modal="true" aria-label="Product detail">
+  <div class="product-popup-inner" id="product-popup-inner">
+    <button class="popup-back-btn" id="popup-back-btn" aria-label="Go back">&#8592;</button>
+    <div class="popup-product-img" id="popup-product-img"></div>
+    <div class="popup-product-body">
+      <div id="popup-product-tag-wrap"></div>
+      <div class="popup-product-name" id="popup-product-name"></div>
+      <div class="popup-product-brand" id="popup-product-brand"></div>
+      <div class="popup-product-price" id="popup-product-price"></div>
+      <button class="popup-add-btn" id="popup-add-btn">+ Add to Cart</button>
+    </div>
+    <div class="popup-suggestions" id="popup-suggestions">
+      <div class="popup-suggestions-title">You might also like</div>
+      <div class="popup-suggestions-row" id="popup-suggestions-row"></div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
