@@ -49,7 +49,6 @@
   </script>
 
   <style>
-      .mm-search-bar { display: none; }
     /* ============================
        CSS RESET & ROOT VARIABLES
        ============================ */
@@ -442,7 +441,6 @@
       .navbar-inner { min-height: 60px; padding: 10px 12px; }
       .navbar-right { margin-left: 0; }
       .floating-cart-btn { min-height: 40px; font-size: 14px; }
-      .mm-search-bar { display: block; }
     }
 
     @media (max-width: 1100px) {
@@ -511,11 +509,15 @@
     .hero-pano-row {
       display: flex;
       gap: 12px;
+      overflow-x: auto;
       padding: 10px 6px 14px;
       margin-bottom: 6px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      scroll-snap-type: x mandatory;
       position: relative;
-      width: 100%;
-      max-width: 900px;
+      width: auto;
+      max-width: 1300px;
       margin-left: auto;
       margin-right: auto;
       background: rgba(255,255,255,.97);
@@ -523,18 +525,8 @@
       border-radius: 18px;
       box-shadow: 0 12px 26px rgba(76,61,35,.12);
       backdrop-filter: blur(3px);
-      overflow-x: visible;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      scroll-snap-type: none;
     }
-    .hero-pano-row-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 120px;
-      width: 100%;
-    }
+
     .hero-pano-row::-webkit-scrollbar { display: none; }
 
     .pano-chip {
@@ -1663,10 +1655,6 @@
 
 <!-- Mobile menu overlay -->
 <div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Mobile navigation">
-    <!-- Mobile search bar -->
-    <div class="mm-search-bar" style="width:100%;max-width:320px;margin:0 auto 18px;">
-      <input type="text" id="mm-nav-search" class="nav-search" placeholder="🔍 Search products..." style="width:100%;font-size:16px;">
-    </div>
   <button class="mobile-close-btn" id="mobile-close-btn" aria-label="Close menu">✕</button>
 
   <!-- User greeting (visible when logged in) -->
@@ -1781,23 +1769,21 @@
     </div>
 
     <!-- Category bar moved below hero content -->
-    <div class="hero-pano-row-wrapper">
-      <div class="hero-pano-row reveal" aria-label="All product categories">
-        <a class="pano-chip" href="?cat=all#shop"><span class="pano-icon">🏪</span><span class="pano-label">All</span></a>
-        <a class="pano-chip" href="?cat=fruits#shop"><span class="pano-icon">🥬</span><span class="pano-label">Fruits &amp; Veg</span></a>
-        <a class="pano-chip" href="?cat=rice#shop"><span class="pano-icon">🍚</span><span class="pano-label">Rice</span></a>
-        <a class="pano-chip" href="?cat=flours#shop"><span class="pano-icon">🌾</span><span class="pano-label">Flours &amp; Cans</span></a>
-        <a class="pano-chip" href="?cat=pickles#shop"><span class="pano-icon">🫙</span><span class="pano-label">Pickles</span></a>
-        <a class="pano-chip" href="?cat=nuts#shop"><span class="pano-icon">🥜</span><span class="pano-label">Nuts &amp; Pastes</span></a>
-        <a class="pano-chip" href="?cat=masala#shop"><span class="pano-icon">🌶️</span><span class="pano-label">Masala</span></a>
-        <a class="pano-chip" href="?cat=rte#shop"><span class="pano-icon">🍱</span><span class="pano-label">Ready to Eat</span></a>
-        <a class="pano-chip" href="?cat=spices#shop"><span class="pano-icon">🧂</span><span class="pano-label">Spices</span></a>
-        <a class="pano-chip" href="?cat=dals#shop"><span class="pano-icon">🫘</span><span class="pano-label">Dals &amp; Oil</span></a>
-        <a class="pano-chip" href="?cat=ghee#shop"><span class="pano-icon">🧈</span><span class="pano-label">Ghee / Mamra</span></a>
-        <a class="pano-chip" href="?cat=snacks#shop"><span class="pano-icon">🍿</span><span class="pano-label">Snacks</span></a>
-        <a class="pano-chip" href="?cat=frozen#shop"><span class="pano-icon">❄️</span><span class="pano-label">Frozen</span></a>
-        <a class="pano-chip" href="?cat=dairy#shop"><span class="pano-icon">🥛</span><span class="pano-label">Dairy</span></a>
-      </div>
+    <div class="hero-pano-row reveal" aria-label="All product categories">
+      <a class="pano-chip" href="?cat=all#shop"><span class="pano-icon">🏪</span><span class="pano-label">All</span></a>
+      <a class="pano-chip" href="?cat=fruits#shop"><span class="pano-icon">🥬</span><span class="pano-label">Fruits &amp; Veg</span></a>
+      <a class="pano-chip" href="?cat=rice#shop"><span class="pano-icon">🍚</span><span class="pano-label">Rice</span></a>
+      <a class="pano-chip" href="?cat=flours#shop"><span class="pano-icon">🌾</span><span class="pano-label">Flours &amp; Cans</span></a>
+      <a class="pano-chip" href="?cat=pickles#shop"><span class="pano-icon">🫙</span><span class="pano-label">Pickles</span></a>
+      <a class="pano-chip" href="?cat=nuts#shop"><span class="pano-icon">🥜</span><span class="pano-label">Nuts &amp; Pastes</span></a>
+      <a class="pano-chip" href="?cat=masala#shop"><span class="pano-icon">🌶️</span><span class="pano-label">Masala</span></a>
+      <a class="pano-chip" href="?cat=rte#shop"><span class="pano-icon">🍱</span><span class="pano-label">Ready to Eat</span></a>
+      <a class="pano-chip" href="?cat=spices#shop"><span class="pano-icon">🧂</span><span class="pano-label">Spices</span></a>
+      <a class="pano-chip" href="?cat=dals#shop"><span class="pano-icon">🫘</span><span class="pano-label">Dals &amp; Oil</span></a>
+      <a class="pano-chip" href="?cat=ghee#shop"><span class="pano-icon">🧈</span><span class="pano-label">Ghee / Mamra</span></a>
+      <a class="pano-chip" href="?cat=snacks#shop"><span class="pano-icon">🍿</span><span class="pano-label">Snacks</span></a>
+      <a class="pano-chip" href="?cat=frozen#shop"><span class="pano-icon">❄️</span><span class="pano-label">Frozen</span></a>
+      <a class="pano-chip" href="?cat=dairy#shop"><span class="pano-icon">🥛</span><span class="pano-label">Dairy</span></a>
     </div>
   </div>
   </div>
@@ -2222,20 +2208,6 @@
 </div>
 
 <script>
-// Mobile menu search: filter products as user types
-document.addEventListener('DOMContentLoaded', function() {
-  var mmNavSearch = document.getElementById('mm-nav-search');
-  if (mmNavSearch) {
-    mmNavSearch.addEventListener('input', function() {
-      var query = mmNavSearch.value.toLowerCase();
-      var products = lsGet('dd_products', null) || _sd.products || DEFAULT_PRODUCTS;
-      var filtered = products.filter(function(p) {
-        return p.name.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query);
-      });
-      renderProductGrid(filtered, 'all');
-    });
-  }
-});
 /* ── Fix mobile 100vh (address bar issue) ── */
 function setVH() {
   document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
