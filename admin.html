@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desi Dash — Admin Portal</title>
+  <script src="site-data.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --saffron:#E8691A; --green:#1A6B3A; --cream:#FDF6EC; --charcoal:#1C1C1C;
+      --gold:#D4A017; --muted:#6B6B6B; --sidebar:#0F3D22; --danger:#DC2626;
+      --success:#16A34A; --border:#E5E7EB; --bg:#F9FAFB;
+      --font-h:'Poppins',sans-serif; --font-b:'Inter',sans-serif;
+    }
+    body { font-family:var(--font-b); background:var(--bg); color:var(--charcoal); min-height:100vh; }
+
+    /* LOGIN */
+    #login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#0F3D22,#1A6B3A); }
+    .login-card { background:#fff; border-radius:20px; padding:48px 40px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+    .login-logo { font-family:var(--font-h); font-weight:700; font-size:26px; color:var(--green); text-align:center; margin-bottom:6px; }
+    .login-logo span { color:var(--saffron); }
+    .login-sub { text-align:center; color:var(--muted); font-size:14px; margin-bottom:32px; }
+    .login-label { display:block; font-weight:500; font-size:13px; color:var(--charcoal); margin-bottom:6px; }
+    .login-input { width:100%; padding:13px 16px; border:2px solid var(--border); border-radius:10px; font-family:var(--font-b); font-size:15px; margin-bottom:16px; outline:none; transition:border-color .2s; }
+    .login-input:focus { border-color:var(--green); }
+    .login-btn { width:100%; padding:14px; background:var(--green); color:#fff; border:none; border-radius:10px; font-family:var(--font-h); font-weight:700; font-size:16px; cursor:pointer; transition:background .2s; }
+    .login-btn:hover { background:#145a30; }
+    .login-error { color:var(--danger); font-size:13px; text-align:center; margin-top:10px; display:none; }
+
+    /* APP */
+    #app { display:none; min-height:100vh; }
+    #app.visible { display:flex; }
+
+    /* SIDEBAR */
+    .sidebar { width:240px; background:var(--sidebar); flex-shrink:0; display:flex; flex-direction:column; min-height:100vh; position:fixed; }
+    .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,.1); font-family:var(--font-h); font-weight:700; font-size:20px; color:#fff; }
+    .sidebar-logo span { color:var(--saffron); }
+    .sidebar-badge { font-size:11px; color:rgba(255,255,255,.5); font-family:var(--font-b); font-weight:400; display:block; margin-top:2px; }
+    .sidebar-nav { padding:16px 12px; flex:1; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; cursor:pointer; color:rgba(255,255,255,.65); font-size:14px; font-weight:500; transition:all .2s; margin-bottom:4px; user-select:none; }
+    .nav-item:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .nav-item.active { background:var(--saffron); color:#fff; }
+    .nav-icon { font-size:18px; width:22px; text-align:center; }
+    .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,.1); }
+    .preview-btn { display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.8); border:1px solid rgba(255,255,255,.2); border-radius:8px; padding:10px; font-size:13px; font-weight:500; cursor:pointer; text-decoration:none; width:100%; transition:all .2s; }
+    .preview-btn:hover { background:rgba(255,255,255,.18); color:#fff; }
+    .logout-btn { margin-top:8px; background:none; border:none; color:rgba(255,255,255,.4); font-size:12px; cursor:pointer; width:100%; text-align:center; padding:6px; transition:color .2s; }
+    .logout-btn:hover { color:rgba(255,255,255,.7); }
+
+    /* MAIN */
+    .main { margin-left:240px; flex:1; padding:32px; min-height:100vh; }
+    .page-header { margin-bottom:28px; }
+    .page-title { font-family:var(--font-h); font-weight:700; font-size:26px; color:var(--charcoal); }
+    .page-sub { font-size:14px; color:var(--muted); margin-top:4px; }
+
+    /* CARDS */
+    .card { background:#fff; border-radius:14px; padding:24px; box-shadow:0 1px 4px rgba(0,0,0,.06); margin-bottom:20px; border:1px solid var(--border); }
+    .card-title { font-family:var(--font-h); font-weight:700; font-size:16px; color:var(--charcoal); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+
+    /* FORMS */
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-grid.cols-1 { grid-template-columns:1fr; }
+    .form-grid.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+    .form-group { display:flex; flex-direction:column; gap:6px; }
+    .form-group.full { grid-column:1/-1; }
+    label { font-size:13px; font-weight:500; color:var(--charcoal); }
+    input[type="text"],input[type="number"],input[type="email"],input[type="password"],textarea,select {
+      padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; font-family:var(--font-b); font-size:14px; outline:none; transition:border-color .2s; width:100%; background:#fff; color:var(--charcoal);
+    }
+    input:focus,textarea:focus,select:focus { border-color:var(--green); }
+    textarea { resize:vertical; min-height:80px; }
+
+    /* BUTTONS */
+    .btn { padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-family:var(--font-h); font-weight:600; font-size:14px; transition:all .2s; display:inline-flex; align-items:center; gap:6px; }
+    .btn-primary { background:var(--green); color:#fff; }
+    .btn-primary:hover { background:#145a30; }
+    .btn-saffron { background:var(--saffron); color:#fff; }
+    .btn-saffron:hover { background:#C8571A; }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn-danger:hover { background:#B91C1C; }
+    .btn-outline { background:transparent; border:1.5px solid var(--border); color:var(--charcoal); }
+    .btn-outline:hover { border-color:var(--green); color:var(--green); }
+    .btn-sm { padding:6px 14px; font-size:12px; }
+    .btn-row { display:flex; gap:10px; align-items:center; margin-top:16px; }
+
+    /* TOAST */
+    #toast { position:fixed; bottom:24px; right:24px; z-index:9999; background:var(--green); color:#fff; padding:14px 20px; border-radius:10px; font-weight:600; font-size:14px; box-shadow:0 8px 24px rgba(0,0,0,.15); transform:translateY(20px); opacity:0; transition:all .3s; pointer-events:none; }
+    #toast.show { transform:translateY(0); opacity:1; }
+    #toast.error { background:var(--danger); }
+
+    /* TABLE */
+    .data-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .data-table th { text-align:left; padding:10px 14px; background:var(--bg); font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--border); }
+    .data-table td { padding:12px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .data-table tr:last-child td { border-bottom:none; }
+    .data-table tr:hover td { background:#FAFAFA; }
+
+    .tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+    .tag-green { background:rgba(26,107,58,.1); color:var(--green); }
+    .tag-orange { background:rgba(232,105,26,.1); color:var(--saffron); }
+    .tag-grey { background:rgba(107,107,107,.1); color:var(--muted); }
+    .emoji-big { font-size:22px; }
+
+    /* PANELS */
+    .panel { display:none; }
+    .panel.active { display:block; }
+
+    /* STATS */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+    .stat-card { background:#fff; border-radius:12px; padding:20px; border:1px solid var(--border); text-align:center; }
+    .stat-n { font-family:var(--font-h); font-weight:700; font-size:28px; color:var(--green); }
+    .stat-l { font-size:12px; color:var(--muted); margin-top:4px; }
+
+    /* EMOJI & COLOR PICKERS */
+    .emoji-grid { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+    .emoji-opt { font-size:22px; cursor:pointer; padding:4px; border-radius:6px; border:2px solid transparent; transition:all .15s; }
+    .emoji-opt:hover,.emoji-opt.selected { border-color:var(--green); background:rgba(26,107,58,.08); }
+    .color-grid { display:flex; gap:8px; margin-top:6px; }
+    .color-opt { width:32px; height:32px; border-radius:6px; cursor:pointer; border:2px solid transparent; transition:all .15s; }
+    .color-opt:hover,.color-opt.selected { border-color:var(--charcoal); transform:scale(1.1); }
+
+    /* PHOTO UPLOAD */
+    .photo-upload-zone {
+      border: 2px dashed var(--border); border-radius: 12px; padding: 20px;
+      text-align: center; cursor: pointer; transition: all .2s; background: #fafafa;
+      min-height: 120px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+    }
+    .photo-upload-zone:hover, .photo-upload-zone.drag-over {
+      border-color: var(--green); background: rgba(26,107,58,.04);
+    }
+    .photo-upload-zone .upload-icon { font-size: 32px; }
+    .photo-upload-zone p { font-size: 13px; color: var(--muted); margin: 0; }
+    .photo-upload-zone strong { color: var(--green); cursor: pointer; }
+
+    .photo-preview-wrap {
+      position: relative; display: inline-block; margin-top: 6px;
+    }
+    .photo-preview-wrap img {
+      width: 110px; height: 110px; object-fit: cover;
+      border-radius: 10px; border: 2px solid var(--border); display: block;
+    }
+    .photo-remove-btn {
+      position: absolute; top: -8px; right: -8px;
+      background: var(--danger); color: #fff; border: none;
+      border-radius: 50%; width: 22px; height: 22px; font-size: 12px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .photo-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; vertical-align: middle; }
+    .emoji-or-photo { font-size: 22px; }
+
+    @media(max-width:900px){
+      .sidebar{width:60px;}
+      .sidebar-logo,.nav-item span,.sidebar-badge{display:none;}
+      .nav-item{justify-content:center;padding:12px;}
+      .main{margin-left:60px;}
+      .stats-row{grid-template-columns:1fr 1fr;}
+      .form-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><span>⚡</span> Desi Dash</div>
+    <p class="login-sub">Admin Portal — Sign in to manage your website</p>
+    <label class="login-label">Username</label>
+    <input type="text" id="login-user" class="login-input" placeholder="admin" value="admin">
+    <label class="login-label">Password</label>
+    <input type="password" id="login-pass" class="login-input" placeholder="Enter password">
+    <button class="login-btn" id="login-btn">Sign In →</button>
+    <p class="login-error" id="login-error">Incorrect username or password.</p>
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px;">First time? Default password: <strong>admin123</strong></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span>⚡</span> Desi Dash<span class="sidebar-badge">Admin Portal</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-panel="products"><span class="nav-icon">🛒</span><span>Products</span></div>
+      <div class="nav-item" data-panel="business"><span class="nav-icon">⚙️</span><span>Business Info</span></div>
+      <div class="nav-item" data-panel="zones"><span class="nav-icon">📍</span><span>Delivery Zones</span></div>
+      <div class="nav-item" data-panel="testimonials"><span class="nav-icon">⭐</span><span>Testimonials</span></div>
+      <div class="nav-item" data-panel="customers"><span class="nav-icon">👥</span><span>Customers</span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="preview-btn" id="export-btn" style="background:var(--saffron);border-color:var(--saffron);color:#fff;margin-bottom:8px">📤 Export for GitHub</button>
+      <a href="index.html" target="_blank" class="preview-btn">👁 Preview Site</a>
+      <button class="logout-btn" id="logout-btn">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- PRODUCTS -->
+    <div class="panel active" id="panel-products">
+      <div class="page-header">
+        <h1 class="page-title">🛒 Products</h1>
+        <p class="page-sub">Add, edit, or remove products shown in the shop section.</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-n" id="stat-total">0</div><div class="stat-l">Total Products</div></div>
+        <div class="stat-card"><div class="stat-n" id="stat-staples">0</div><div class="stat-l">Staples</div></div>
+        <div class="stat-card"><div class="stat-n" id="stat-spices">0</div><div class="stat-l">Spices</div></div>
+        <div class="stat-card"><div class="stat-n" id="stat-others">0</div><div class="stat-l">Other Categories</div></div>
+      </div>
+      <div class="card" id="product-form-card">
+        <div class="card-title" id="product-form-title">➕ Add New Product</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Product Name *</label><input type="text" id="p-name" placeholder="e.g. Aashirvaad Atta 10kg"></div>
+          <div class="form-group"><label>Brand &amp; Size</label><input type="text" id="p-brand" placeholder="e.g. Aashirvaad · 10 kg"></div>
+          <div class="form-group"><label>Price (USD) *</label><input type="number" id="p-price" placeholder="18.99" step="0.01" min="0"></div>
+          <div class="form-group">
+            <label>Category *</label>
+            <select id="p-cat">
+              <option value="fruits">🥬 Fruits &amp; Vegetables</option>
+              <option value="rice">🍚 Rice</option>
+              <option value="flours">🌾 Flours &amp; Cans</option>
+              <option value="pickles">🫙 Pickles</option>
+              <option value="nuts">🥜 Nuts &amp; Pastes</option>
+              <option value="masala">🌶️ Masala</option>
+              <option value="rte">🍱 Ready to Eat</option>
+              <option value="spices">🧂 Spices</option>
+              <option value="dals">🫘 Dals &amp; Oil</option>
+              <option value="ghee">🧈 Ghee / Mamra / Makhana</option>
+              <option value="snacks">🍿 Snacks</option>
+              <option value="frozen">❄️ Frozen</option>
+              <option value="dairy">🥛 Dairy</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Badge Label (optional)</label><input type="text" id="p-tag" placeholder="e.g. Best Seller, 🔥 Trending"></div>
+          <div class="form-group">
+            <label>Card Background</label>
+            <div class="color-grid">
+              <div class="color-opt selected" data-bg="bg1" style="background:linear-gradient(135deg,#FDF6EC,#FDEBD0)" title="Warm Cream"></div>
+              <div class="color-opt" data-bg="bg2" style="background:linear-gradient(135deg,#F0FAF4,#D6F5E3)" title="Mint Green"></div>
+              <div class="color-opt" data-bg="bg3" style="background:linear-gradient(135deg,#FFF8E7,#FDEFC3)" title="Gold Yellow"></div>
+              <div class="color-opt" data-bg="bg4" style="background:linear-gradient(135deg,#FFF0F0,#FFD6D6)" title="Soft Red"></div>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Emoji Icon *</label>
+            <input type="text" id="p-emoji" placeholder="e.g. 🌾" maxlength="4" style="width:80px;font-size:22px;text-align:center;">
+            <div class="emoji-grid" id="emoji-grid"></div>
+          </div>
+          <div class="form-group full">
+            <label>Product Photo <span style="font-weight:400;color:var(--muted)">(optional — auto-compressed)</span></label>
+            <input type="file" id="p-photo-input" accept="image/*" style="display:none">
+            <div class="photo-upload-zone" id="photo-upload-zone"
+                 onclick="document.getElementById('p-photo-input').click()"
+                 ondragover="event.preventDefault();this.classList.add('drag-over')"
+                 ondragleave="this.classList.remove('drag-over')"
+                 ondrop="event.preventDefault();this.classList.remove('drag-over');handlePhotoFile(event.dataTransfer.files[0])">
+              <span class="upload-icon">📷</span>
+              <p>Drag &amp; drop or <strong>choose a photo</strong></p>
+              <p>JPG, PNG, WEBP — stored with product</p>
+            </div>
+            <div id="photo-preview-container" style="display:none;margin-top:10px">
+              <div class="photo-preview-wrap">
+                <img id="p-photo-preview" src="" alt="Preview">
+                <button type="button" class="photo-remove-btn" onclick="clearPhoto()">✕</button>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin-top:8px">Photo changes are applied to the website only after you click Save Product or Update Product.</p>
+            <input type="hidden" id="p-photo-data">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="save-product-btn">💾 Save Product</button>
+          <button class="btn btn-outline" id="cancel-product-btn" style="display:none">Cancel</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📦 All Products</div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Photo</th><th>Product Name</th><th>Brand</th><th>Price</th><th>Category</th><th>Badge</th><th>Actions</th></tr></thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUSINESS INFO -->
+    <div class="panel" id="panel-business">
+      <div class="page-header">
+        <h1 class="page-title">⚙️ Business Info</h1>
+        <p class="page-sub">Update your contact details, hours, and the announcement banner.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📢 Announcement Bar</div>
+        <div class="form-grid cols-1">
+          <div class="form-group"><label>Announcement Text (shown at the top of the website)</label><textarea id="b-announcement" rows="3" placeholder="🚀 Now delivering across Dallas — FREE first delivery! Use code: FIRSTDASH"></textarea></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="saveBusiness()">💾 Save Changes</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📞 Contact Details</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Phone Number</label><input type="text" id="b-phone" placeholder="(940) 843-6016"></div>
+          <div class="form-group"><label>Email Address</label><input type="email" id="b-email" placeholder="nivasrao17@gmail.com"></div>
+          <div class="form-group"><label>Address</label><input type="text" id="b-address" placeholder="Dallas, TX 75240"></div>
+          <div class="form-group"><label>Operating Hours</label><input type="text" id="b-hours" placeholder="Mon–Sun: 7 AM – 10 PM"></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="saveBusiness()">💾 Save Changes</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔑 Change Admin Password</div>
+        <div class="form-grid">
+          <div class="form-group"><label>New Password</label><input type="password" id="b-newpass" placeholder="Enter new password"></div>
+          <div class="form-group"><label>Confirm Password</label><input type="password" id="b-confirmpass" placeholder="Confirm new password"></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-saffron" onclick="changePassword()">🔒 Update Password</button></div>
+      </div>
+    </div>
+
+    <!-- DELIVERY ZONES -->
+    <div class="panel" id="panel-zones">
+      <div class="page-header">
+        <h1 class="page-title">📍 Delivery Zones</h1>
+        <p class="page-sub">Manage the cities and zip codes you deliver to.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" id="zone-form-title">➕ Add New Zone</div>
+        <div class="form-grid cols-3">
+          <div class="form-group"><label>City Name *</label><input type="text" id="z-city" placeholder="e.g. Plano"></div>
+          <div class="form-group"><label>Avg. Delivery Time (min) *</label><input type="number" id="z-eta" placeholder="58" min="1"></div>
+          <div class="form-group"><label>Emoji Icon</label><input type="text" id="z-emoji" placeholder="🏙️" maxlength="4" style="width:70px;font-size:22px;text-align:center;"></div>
+          <div class="form-group full"><label>Zip Codes (separate with ·)</label><input type="text" id="z-zips" placeholder="e.g. 75023 · 75024 · 75025"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="save-zone-btn">💾 Save Zone</button>
+          <button class="btn btn-outline" id="cancel-zone-btn" style="display:none">Cancel</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🗺️ All Delivery Zones</div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Icon</th><th>City</th><th>Avg. Time</th><th>Zip Codes</th><th>Actions</th></tr></thead>
+            <tbody id="zones-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTIMONIALS -->
+    <div class="panel" id="panel-testimonials">
+      <div class="page-header">
+        <h1 class="page-title">⭐ Testimonials</h1>
+        <p class="page-sub">Manage customer reviews shown on the website.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" id="test-form-title">➕ Add New Review</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Customer Name *</label><input type="text" id="t-name" placeholder="e.g. Priya Sharma"></div>
+          <div class="form-group"><label>Location</label><input type="text" id="t-location" placeholder="e.g. Plano, TX · Regular Customer"></div>
+          <div class="form-group"><label>Star Rating</label><select id="t-rating"><option value="5">★★★★★ (5 stars)</option><option value="4">★★★★☆ (4 stars)</option><option value="3">★★★☆☆ (3 stars)</option></select></div>
+          <div class="form-group"><label>Avatar Emoji</label><input type="text" id="t-avatar" placeholder="👩" maxlength="4" style="width:70px;font-size:22px;text-align:center;"></div>
+          <div class="form-group full"><label>Review Text *</label><textarea id="t-text" rows="4" placeholder="Write the customer's review here..."></textarea></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="save-test-btn">💾 Save Review</button>
+          <button class="btn btn-outline" id="cancel-test-btn" style="display:none">Cancel</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💬 All Reviews</div>
+        <div id="testimonials-list"></div>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="panel" id="panel-customers">
+      <div class="page-header">
+        <h1 class="page-title">👥 Customers</h1>
+        <p class="page-sub">View all registered customers from the Desi Dash website.</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-n" id="stat-customers">0</div><div class="stat-l">Total Customers</div></div>
+        <div class="stat-card"><div class="stat-n" id="stat-google-customers">0</div><div class="stat-l">Google Sign-In</div></div>
+        <div class="stat-card"><div class="stat-n" id="stat-email-customers">0</div><div class="stat-l">Email/Password</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Customer List</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead>
+              <tr style="border-bottom:2px solid #eee;text-align:left;">
+                <th style="padding:10px 8px;">#</th>
+                <th style="padding:10px 8px;">Name</th>
+                <th style="padding:10px 8px;">Email</th>
+                <th style="padding:10px 8px;">Phone</th>
+                <th style="padding:10px 8px;">Address</th>
+                <th style="padding:10px 8px;">Joined</th>
+                <th style="padding:10px 8px;">Type</th>
+              </tr>
+            </thead>
+            <tbody id="customers-tbody"></tbody>
+          </table>
+        </div>
+        <p id="no-customers-msg" style="text-align:center;color:#999;padding:30px 0;">No customers have registered yet.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // DEFAULT DATA
+  const DEFAULT_PRODUCTS = [
+    // ── Rice ─────────────────────────────────────────────────────────
+    {id:1,  name:"Deccan Sona Masoori Rice",        brand:"Deccan · 20 lb",         price:22.99, cat:"rice",    tag:"Best Seller",  emoji:"🍚", bg:"bg1"},
+    {id:2,  name:"Royal Basmati Rice",               brand:"Royal · 20 lb",          price:26.99, cat:"rice",    tag:"Popular",      emoji:"🍚", bg:"bg2"},
+    {id:3,  name:"Laxmi Extra Long Basmati Rice",    brand:"Laxmi · 10 lb",          price:13.99, cat:"rice",    tag:"",             emoji:"🍚", bg:"bg3"},
+    {id:4,  name:"Deccan Brown Basmati Rice",        brand:"Deccan · 10 lb",         price:12.49, cat:"rice",    tag:"Healthy Pick", emoji:"🌾", bg:"bg2"},
+    {id:5,  name:"Royal Jasmine Rice",               brand:"Royal · 5 lb",           price:8.99,  cat:"rice",    tag:"",             emoji:"🍚", bg:"bg1"},
+    {id:6,  name:"Laxmi Ponni Boiled Rice",          brand:"Laxmi · 20 lb",          price:19.99, cat:"rice",    tag:"",             emoji:"🍚", bg:"bg4"},
+    // ── Flours & Cans ─────────────────────────────────────────────────
+    {id:7,  name:"Whole Wheat Atta",                 brand:"DesiDash · 10 lb",       price:11.99, cat:"flours",  tag:"Top Seller",   emoji:"🌾", bg:"bg3"},
+    {id:8,  name:"Besan (Chickpea Flour)",           brand:"DesiDash · 4 lb",        price:6.49,  cat:"flours",  tag:"",             emoji:"🌾", bg:"bg1"},
+    {id:9,  name:"Rice Flour (Fine Ground)",         brand:"DesiDash · 4 lb",        price:5.49,  cat:"flours",  tag:"",             emoji:"🌾", bg:"bg2"},
+    {id:10, name:"Maida (All-Purpose Flour)",        brand:"DesiDash · 4 lb",        price:4.99,  cat:"flours",  tag:"",             emoji:"🌾", bg:"bg3"},
+    {id:11, name:"Sooji (Fine Semolina)",            brand:"DesiDash · 4 lb",        price:4.49,  cat:"flours",  tag:"",             emoji:"🌾", bg:"bg1"},
+    {id:12, name:"Idli Dosa Batter (Ready)",         brand:"DesiDash · 32 oz",       price:4.99,  cat:"flours",  tag:"Fresh Daily",  emoji:"🫙", bg:"bg2"},
+    // ── Pickles ───────────────────────────────────────────────────────
+    {id:13, name:"Priya Mango Pickle (Avakaya)",     brand:"Priya · 500 g",          price:5.49,  cat:"pickles", tag:"🔥 Hot Pick",  emoji:"🫙", bg:"bg4"},
+    {id:14, name:"Priya Gongura Pickle",             brand:"Priya · 500 g",          price:5.99,  cat:"pickles", tag:"Andhra Fav",   emoji:"🫙", bg:"bg1"},
+    {id:15, name:"Priya Mixed Vegetable Pickle",     brand:"Priya · 500 g",          price:4.99,  cat:"pickles", tag:"",             emoji:"🫙", bg:"bg3"},
+    {id:16, name:"Deep Lemon Pickle",                brand:"Deep · 400 g",           price:4.49,  cat:"pickles", tag:"",             emoji:"🍋", bg:"bg2"},
+    {id:17, name:"Mother's Recipe Mango Pickle",     brand:"Mother's · 1 kg",        price:8.99,  cat:"pickles", tag:"Family Size",  emoji:"🫙", bg:"bg4"},
+    {id:18, name:"Mother's Recipe Mixed Pickle",     brand:"Mother's · 500 g",       price:5.49,  cat:"pickles", tag:"",             emoji:"🫙", bg:"bg1"},
+    // ── Nuts & Pastes ─────────────────────────────────────────────────
+    {id:19, name:"Premium Cashews (W240)",           brand:"DesiDash · 1 lb",        price:9.99,  cat:"nuts",    tag:"Premium",      emoji:"🥜", bg:"bg3"},
+    {id:20, name:"Raw Almonds",                      brand:"DesiDash · 1 lb",        price:8.99,  cat:"nuts",    tag:"",             emoji:"🥜", bg:"bg1"},
+    {id:21, name:"Peanuts Roasted & Salted",         brand:"DesiDash · 1 lb",        price:3.49,  cat:"nuts",    tag:"",             emoji:"🥜", bg:"bg2"},
+    {id:22, name:"Coconut Milk (Canned)",            brand:"DesiDash · 14 oz",       price:2.99,  cat:"nuts",    tag:"",             emoji:"🥥", bg:"bg3"},
+    {id:23, name:"Sesame Seeds (White)",             brand:"DesiDash · 400 g",       price:3.99,  cat:"nuts",    tag:"",             emoji:"🌱", bg:"bg1"},
+    // ── Masala ────────────────────────────────────────────────────────
+    {id:24, name:"Shan Biryani Masala",              brand:"Shan · 60 g",            price:3.49,  cat:"masala",  tag:"🔥 Trending",  emoji:"🌶️", bg:"bg4"},
+    {id:25, name:"Shan Chicken Karahi Masala",       brand:"Shan · 50 g",            price:2.99,  cat:"masala",  tag:"",             emoji:"🌶️", bg:"bg1"},
+    {id:26, name:"MDH Chana Masala",                 brand:"MDH · 100 g",            price:3.29,  cat:"masala",  tag:"Top Rated",    emoji:"🌶️", bg:"bg2"},
+    {id:27, name:"MDH Kitchen King Masala",          brand:"MDH · 100 g",            price:3.49,  cat:"masala",  tag:"",             emoji:"🌶️", bg:"bg3"},
+    {id:28, name:"Everest Garam Masala",             brand:"Everest · 100 g",        price:2.99,  cat:"masala",  tag:"",             emoji:"🌶️", bg:"bg1"},
+    {id:29, name:"Everest Pav Bhaji Masala",         brand:"Everest · 100 g",        price:3.29,  cat:"masala",  tag:"",             emoji:"🌶️", bg:"bg4"},
+    {id:30, name:"MDH Rajma Masala",                 brand:"MDH · 100 g",            price:3.29,  cat:"masala",  tag:"",             emoji:"🌶️", bg:"bg2"},
+    // ── Ready to Eat ──────────────────────────────────────────────────
+    {id:31, name:"MTR Palak Paneer",                 brand:"MTR · 300 g",            price:4.99,  cat:"rte",     tag:"Popular",      emoji:"🍱", bg:"bg2"},
+    {id:32, name:"MTR Dal Makhani",                  brand:"MTR · 300 g",            price:4.99,  cat:"rte",     tag:"",             emoji:"🍱", bg:"bg1"},
+    {id:33, name:"MTR Chana Masala",                 brand:"MTR · 300 g",            price:4.99,  cat:"rte",     tag:"",             emoji:"🍱", bg:"bg3"},
+    {id:34, name:"MTR Upma Mix",                     brand:"MTR · 200 g",            price:2.99,  cat:"rte",     tag:"",             emoji:"🍱", bg:"bg4"},
+    {id:35, name:"MTR Gulab Jamun Mix",              brand:"MTR · 200 g",            price:3.49,  cat:"rte",     tag:"",             emoji:"🍮", bg:"bg1"},
+    {id:36, name:"MTR Kheer Mix",                    brand:"MTR · 100 g",            price:2.49,  cat:"rte",     tag:"",             emoji:"🍮", bg:"bg2"},
+    // ── Spices ────────────────────────────────────────────────────────
+    {id:37, name:"Turmeric Powder",                  brand:"DesiDash · 200 g",       price:2.99,  cat:"spices",  tag:"",             emoji:"🧂", bg:"bg3"},
+    {id:38, name:"Red Chili Powder",                 brand:"DesiDash · 200 g",       price:2.99,  cat:"spices",  tag:"",             emoji:"🌶️", bg:"bg4"},
+    {id:39, name:"Coriander Powder",                 brand:"DesiDash · 200 g",       price:2.79,  cat:"spices",  tag:"",             emoji:"🧂", bg:"bg1"},
+    {id:40, name:"Cumin Seeds (Jeera)",              brand:"DesiDash · 200 g",       price:2.99,  cat:"spices",  tag:"",             emoji:"🌱", bg:"bg2"},
+    {id:41, name:"Mustard Seeds (Rai)",              brand:"DesiDash · 200 g",       price:2.49,  cat:"spices",  tag:"",             emoji:"🌱", bg:"bg3"},
+    {id:42, name:"Cardamom Pods (Elaichi)",          brand:"DesiDash · 50 g",        price:4.99,  cat:"spices",  tag:"Premium",      emoji:"🧂", bg:"bg1"},
+    // ── Dals & Oil ────────────────────────────────────────────────────
+    {id:43, name:"Toor Dal (Split Pigeon Peas)",     brand:"DesiDash · 4 lb",        price:7.49,  cat:"dals",    tag:"",             emoji:"🫘", bg:"bg3"},
+    {id:44, name:"Moong Dal (Split Yellow)",         brand:"DesiDash · 4 lb",        price:6.99,  cat:"dals",    tag:"",             emoji:"🫘", bg:"bg1"},
+    {id:45, name:"Chana Dal (Split Chickpeas)",      brand:"DesiDash · 4 lb",        price:6.49,  cat:"dals",    tag:"",             emoji:"🫘", bg:"bg2"},
+    {id:46, name:"Urad Dal (Black Gram Split)",      brand:"DesiDash · 4 lb",        price:7.49,  cat:"dals",    tag:"",             emoji:"🫘", bg:"bg4"},
+    {id:47, name:"Sunflower Oil",                    brand:"DesiDash · 1 L",         price:4.99,  cat:"dals",    tag:"",             emoji:"🫚", bg:"bg3"},
+    {id:48, name:"Mustard Oil",                      brand:"DesiDash · 1 L",         price:5.49,  cat:"dals",    tag:"",             emoji:"🫚", bg:"bg1"},
+    // ── Ghee / Mamra / Makhana ────────────────────────────────────────
+    {id:49, name:"Pure Desi Ghee",                   brand:"DesiDash · 32 oz",       price:14.99, cat:"ghee",    tag:"Best Seller",  emoji:"🧈", bg:"bg3"},
+    {id:50, name:"Mamra (Puffed Rice Balls)",        brand:"DesiDash · 400 g",       price:3.49,  cat:"ghee",    tag:"",             emoji:"🍿", bg:"bg1"},
+    {id:51, name:"Makhana (Fox Nuts) Premium",       brand:"DesiDash · 200 g",       price:6.99,  cat:"ghee",    tag:"Healthy",      emoji:"⚪", bg:"bg2"},
+    {id:52, name:"Roasted Makhana (Salted)",         brand:"DesiDash · 150 g",       price:5.49,  cat:"ghee",    tag:"Snack Pack",   emoji:"⚪", bg:"bg4"},
+    {id:53, name:"A2 Cow Ghee",                      brand:"DesiDash · 16 oz",       price:11.99, cat:"ghee",    tag:"Premium A2",   emoji:"🧈", bg:"bg3"},
+    // ── Snacks ────────────────────────────────────────────────────────
+    {id:54, name:"Haldiram's Aloo Bhujia",           brand:"Haldiram's · 400 g",     price:5.99,  cat:"snacks",  tag:"🔥 Trending",  emoji:"🍿", bg:"bg4"},
+    {id:55, name:"Haldiram's Mixture Namkeen",       brand:"Haldiram's · 400 g",     price:5.49,  cat:"snacks",  tag:"",             emoji:"🍿", bg:"bg1"},
+    {id:56, name:"Anand Chakli",                     brand:"Anand · 200 g",          price:3.99,  cat:"snacks",  tag:"",             emoji:"🍥", bg:"bg2"},
+    {id:57, name:"Telugu Foods Murukku",             brand:"Telugu Foods · 200 g",   price:4.49,  cat:"snacks",  tag:"Crunchy Fav",  emoji:"🍿", bg:"bg3"},
+    {id:58, name:"Britannia Good Day Cookies",       brand:"Britannia · 200 g",      price:2.99,  cat:"snacks",  tag:"",             emoji:"🍪", bg:"bg1"},
+    {id:59, name:"Kurkure Masala Munch",             brand:"Kurkure · 200 g",        price:2.49,  cat:"snacks",  tag:"",             emoji:"🌮", bg:"bg4"},
+    {id:60, name:"Lay's Classic Salted Chips",       brand:"Lay's · 184 g",          price:2.99,  cat:"snacks",  tag:"",             emoji:"🥔", bg:"bg2"},
+    {id:61, name:"Cadbury Dairy Milk Chocolate",     brand:"Cadbury · 200 g",        price:3.99,  cat:"snacks",  tag:"Sweet Treat",  emoji:"🍫", bg:"bg3"},
+    // ── Frozen ───────────────────────────────────────────────────────
+    {id:62, name:"Anand Samosas (10 pcs)",           brand:"Anand · 20 oz",          price:6.99,  cat:"frozen",  tag:"Popular",      emoji:"❄️", bg:"bg4"},
+    {id:63, name:"Anand Methi Thepla (10 pcs)",      brand:"Anand · 500 g",          price:5.99,  cat:"frozen",  tag:"",             emoji:"❄️", bg:"bg2"},
+    {id:64, name:"Vadilal Mango Pulp",               brand:"Vadilal · 30 oz",        price:4.99,  cat:"frozen",  tag:"",             emoji:"🥭", bg:"bg3"},
+    {id:65, name:"Haldiram's Gulab Jamun",           brand:"Haldiram's · 1 kg",      price:8.99,  cat:"frozen",  tag:"",             emoji:"🍮", bg:"bg1"},
+    {id:66, name:"Daily Delight Frozen Paratha",     brand:"Daily Delight · 10 pcs", price:6.49,  cat:"frozen",  tag:"",             emoji:"🫓", bg:"bg4"},
+    // ── Dairy ────────────────────────────────────────────────────────
+    {id:67, name:"Amul Salted Butter",               brand:"Amul · 500 g",           price:6.99,  cat:"dairy",   tag:"Fresh Daily",  emoji:"🧈", bg:"bg3"},
+    {id:68, name:"Gopi Paneer Block",                brand:"Gopi · 400 g",           price:5.49,  cat:"dairy",   tag:"Popular",      emoji:"🧀", bg:"bg2"},
+    {id:69, name:"Amul Processed Cheese Slices",     brand:"Amul · 200 g",           price:4.99,  cat:"dairy",   tag:"",             emoji:"🧀", bg:"bg1"},
+    {id:70, name:"Desi Fresh Whole Milk",            brand:"Desi · 1 gallon",        price:5.99,  cat:"dairy",   tag:"",             emoji:"🥛", bg:"bg4"},
+    {id:71, name:"Amul Pure Ghee",                   brand:"Amul · 1 lb",            price:9.99,  cat:"dairy",   tag:"",             emoji:"🧈", bg:"bg3"},
+    {id:72, name:"Haldiram's Rasgulla Tin",          brand:"Haldiram's · 1 kg",      price:9.99,  cat:"dairy",   tag:"",             emoji:"🍮", bg:"bg1"},
+    {id:73, name:"Limca Lemon Soda (Can)",           brand:"Limca · 300 ml",         price:1.49,  cat:"dairy",   tag:"Refreshing",   emoji:"🥤", bg:"bg2"},
+  ];
+  const DEFAULT_BUSINESS = {
+    announcement:"🚀 Now delivering across Dallas, Plano, Frisco & Irving — FREE delivery on your first order! Use code: FIRSTDASH",
+    phone:"(940) 843-6016",email:"nivasrao17@gmail.com",address:"Dallas, TX 75240",hours:"Mon–Sun: 7 AM – 10 PM"
+  };
+  const DEFAULT_ZONES = [
+    {id:1,emoji:"🏙️",city:"Dallas",eta:52,zips:"75201 · 75240 · 75251 · 75254"},
+    {id:2,emoji:"🌆",city:"Plano",eta:58,zips:"75023 · 75024 · 75025 · 75074"},
+    {id:3,emoji:"🏘️",city:"Frisco",eta:65,zips:"75033 · 75034 · 75035"},
+    {id:4,emoji:"🌇",city:"Irving",eta:62,zips:"75038 · 75039 · 75061 · 75062"},
+    {id:5,emoji:"🏠",city:"Allen",eta:68,zips:"75002 · 75013"},
+    {id:6,emoji:"🌃",city:"McKinney",eta:72,zips:"75069 · 75070 · 75071"},
+    {id:7,emoji:"🏡",city:"Carrollton",eta:55,zips:"75006 · 75007 · 75010"},
+    {id:8,emoji:"🌉",city:"Richardson",eta:48,zips:"75080 · 75081 · 75082"},
+  ];
+  const DEFAULT_TESTIMONIALS = [
+    {id:1,name:"Priya Sharma",location:"Plano, TX · Regular Customer",text:"I ordered atta and fresh vegetables at 7 PM and they arrived by 8:15. The quality was just like what I'd get from Patel Brothers. Absolutely love this service — it's saved me so many weekend trips!",rating:5,avatar:"👩",avatarClass:"av-sa"},
+    {id:2,name:"Rahul Mehta",location:"Frisco, TX · App User",text:"As a working professional in Frisco, I never have time for weekend grocery runs. Desi Dash has genuinely changed my life. The app is so easy, and they always have everything — even puja items!",rating:5,avatar:"👨",avatarClass:"av-gr"},
+    {id:3,name:"Anjali Reddy",location:"Irving, TX · Since Day 1",text:"The delivery driver even called to confirm my apartment number and was so polite. Sona rice, Maggi, Haldiram's — all arrived perfectly packed. This is the Amazon Prime of Indian groceries!",rating:5,avatar:"👩",avatarClass:"av-go"},
+  ];
+
+  // STORAGE
+  const get = (k,d) => { try { return JSON.parse(localStorage.getItem(k))??d; } catch { return d; } };
+  const set = (k,v) => localStorage.setItem(k,JSON.stringify(v));
+  const _sd = window.__SITE_DATA__ || {};
+
+  /* ── Firebase init ── */
+  firebase.initializeApp({
+    apiKey: "AIzaSyDvSnqUDg_zzs6aOc5_MYZiBL6_LcZ1AEE",
+    authDomain: "desi-dash-cac3d.firebaseapp.com",
+    projectId: "desi-dash-cac3d",
+    storageBucket: "desi-dash-cac3d.firebasestorage.app",
+    messagingSenderId: "265681363317",
+    appId: "1:265681363317:web:bdbc596bad30423207733c"
+  });
+  const db = firebase.firestore();
+
+  let products     = DEFAULT_PRODUCTS;
+  let business     = DEFAULT_BUSINESS;
+  let zones        = DEFAULT_ZONES;
+  let testimonials = DEFAULT_TESTIMONIALS;
+  let nextId       = 100;
+
+  /* ── Load data from Firestore first, then fall back ── */
+  async function fsGet(docId) {
+    try {
+      const snap = await db.collection('site').doc(docId).get();
+      return snap.exists ? snap.data().value : null;
+    } catch (e) { console.warn('Firestore read failed:', e); return null; }
+  }
+
+  async function loadFromFirestore() {
+    const [fsProd, fsBiz, fsZones, fsTests, fsNextId] = await Promise.all([
+      fsGet('products'), fsGet('business'), fsGet('zones'), fsGet('testimonials'), fsGet('next_id')
+    ]);
+    products     = fsProd  || get('dd_products', null) || _sd.products || DEFAULT_PRODUCTS;
+    business     = fsBiz   || get('dd_business', null) || _sd.business || DEFAULT_BUSINESS;
+    zones        = fsZones || get('dd_zones', null)    || _sd.zones    || DEFAULT_ZONES;
+    testimonials = fsTests || get('dd_testimonials', null) || _sd.testimonials || DEFAULT_TESTIMONIALS;
+    nextId       = fsNextId || get('dd_next_id', 100);
+    initAll(); // re-render everything with Firestore data
+  }
+  let adminPassHash = get('dd_admin_pass_hash', null); // SHA-256 hex string
+
+  /* ── SHA-256 helper ── */
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  /* ── One-time migration: hash the plain-text password if not yet hashed ── */
+  (async () => {
+    if (!adminPassHash) {
+      // Check for old plain-text key, otherwise default to 'admin123'
+      const legacyPlain = get('dd_admin_pass', 'admin123');
+      const plain = (typeof legacyPlain === 'string' && legacyPlain.length < 64)
+        ? legacyPlain : 'admin123';
+      adminPassHash = await sha256(plain);
+      set('dd_admin_pass_hash', adminPassHash);
+      localStorage.removeItem('dd_admin_pass'); // remove plain-text key
+    }
+  })();
+
+  function saveAll() {
+    try {
+      set('dd_products',products); set('dd_business',business);
+      set('dd_zones',zones); set('dd_testimonials',testimonials);
+      set('dd_next_id',nextId);
+    } catch (err) {
+      console.warn('localStorage save failed:', err);
+    }
+    /* ── Also save to Firebase Firestore ── */
+    Promise.all([
+      db.collection('site').doc('products').set({ value: products }),
+      db.collection('site').doc('business').set({ value: business }),
+      db.collection('site').doc('zones').set({ value: zones }),
+      db.collection('site').doc('testimonials').set({ value: testimonials }),
+      db.collection('site').doc('next_id').set({ value: nextId })
+    ]).then(() => {
+      console.log('✅ Firestore save successful');
+      toast('✅ Saved to cloud!');
+    }).catch(err => {
+      console.error('❌ Firestore save failed:', err);
+      toast('⚠️ Saved locally but cloud sync failed: ' + err.message, true);
+    });
+    return true;
+  }
+
+  // TOAST
+  let toastTimer;
+  function toast(msg,isError=false) {
+    const el=document.getElementById('toast');
+    el.textContent=msg; el.className=isError?'error show':'show';
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>el.className='',2800);
+  }
+
+  // LOGIN
+  document.getElementById('login-btn').addEventListener('click',doLogin);
+  document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  async function doLogin() {
+    const u=document.getElementById('login-user').value.trim();
+    const p=document.getElementById('login-pass').value;
+    const hashed = await sha256(p);
+    if(u==='admin' && hashed===adminPassHash){
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app').classList.add('visible');
+      loadFromFirestore(); // load data from Firestore, then render
+    } else {
+      document.getElementById('login-error').style.display='block';
+    }
+  }
+  document.getElementById('logout-btn').addEventListener('click',()=>{
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('login-pass').value='';
+    document.getElementById('login-error').style.display='none';
+  });
+
+  // NAV
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    item.addEventListener('click',()=>{
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('panel-'+item.dataset.panel).classList.add('active');
+    });
+  });
+
+  function initAll() { renderProducts(); loadBusinessForm(); renderZones(); renderTestimonials(); buildEmojiGrid(); renderCustomers(); }
+
+  // CUSTOMERS (read from dd_customers in localStorage — shared with main site)
+  function renderCustomers() {
+    const customers = JSON.parse(localStorage.getItem('dd_customers') || '[]');
+    const tbody = document.getElementById('customers-tbody');
+    const noMsg = document.getElementById('no-customers-msg');
+    document.getElementById('stat-customers').textContent = customers.length;
+    document.getElementById('stat-google-customers').textContent = customers.filter(c => c.passwordHash === 'google_oauth').length;
+    document.getElementById('stat-email-customers').textContent = customers.filter(c => c.passwordHash !== 'google_oauth').length;
+    if (customers.length === 0) {
+      tbody.innerHTML = '';
+      noMsg.style.display = '';
+      return;
+    }
+    noMsg.style.display = 'none';
+    tbody.innerHTML = customers.map((c, i) => {
+      const joined = c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : '—';
+      const type = c.passwordHash === 'google_oauth' ? '🔵 Google' : '🟢 Email';
+      return `<tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:10px 8px;color:#999;">${i + 1}</td>
+        <td style="padding:10px 8px;font-weight:500;">${esc(c.name || '—')}</td>
+        <td style="padding:10px 8px;">${esc(c.email)}</td>
+        <td style="padding:10px 8px;">${esc(c.phone || '—')}</td>
+        <td style="padding:10px 8px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(c.address || '—')}</td>
+        <td style="padding:10px 8px;color:#999;">${joined}</td>
+        <td style="padding:10px 8px;">${type}</td>
+      </tr>`;
+    }).join('');
+  }
+  function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  // EMOJI GRID
+  function buildEmojiGrid() {
+    const emojis=[...'🌾🍚🫘🌶️🧈🧀🍿🥬🥒🌿❄️🫓🪔🌼🍬🍰🥛🟡🟠🍮🧂🥜🫚🍵☕🥗🧆🥮🍛🎂🍭🍫'];
+    document.getElementById('emoji-grid').innerHTML=emojis.map(e=>`<span class="emoji-opt" data-e="${e}">${e}</span>`).join('');
+    document.getElementById('emoji-grid').addEventListener('click',e=>{
+      const t=e.target.closest('.emoji-opt'); if(!t) return;
+      document.querySelectorAll('.emoji-opt').forEach(o=>o.classList.remove('selected'));
+      t.classList.add('selected');
+      document.getElementById('p-emoji').value=t.dataset.e;
+    });
+  }
+
+  // COLOR SWATCHES
+  document.querySelectorAll('.color-opt').forEach(opt=>{
+    opt.addEventListener('click',()=>{
+      document.querySelectorAll('.color-opt').forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+  function getSelectedBg() { return document.querySelector('.color-opt.selected')?.dataset.bg||'bg1'; }
+
+  // ══ PRODUCTS ══════════════════════════════════════════════════════
+  let editingProductId=null;
+
+  function renderProducts() {
+    let rice=0,snacks=0;
+    products.forEach(p=>{ if(p.cat==='rice')rice++; else if(p.cat==='snacks')snacks++; });
+    document.getElementById('stat-total').textContent=products.length;
+    document.getElementById('stat-staples').textContent=rice;
+    document.getElementById('stat-spices').textContent=snacks;
+    document.getElementById('stat-others').textContent=products.length-rice-snacks;
+
+    document.getElementById('products-tbody').innerHTML=products.map(p=>`
+      <tr>
+        <td>${p.photo
+          ? `<img src="${p.photo}" class="photo-thumb" alt="${p.name}">`
+          : `<span class="emoji-big">${p.emoji}</span>`}</td>
+        <td><strong>${p.name}</strong></td>
+        <td style="color:var(--muted)">${p.brand||'—'}</td>
+        <td><strong>$${Number(p.price).toFixed(2)}</strong></td>
+        <td><span class="tag tag-green">${p.cat}</span></td>
+        <td>${p.tag?`<span class="tag tag-orange">${p.tag}</span>`:'<span class="tag tag-grey">—</span>'}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="editProduct(${p.id})">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})" style="margin-left:6px">🗑️</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('save-product-btn').addEventListener('click',()=>{
+    const name=document.getElementById('p-name').value.trim();
+    const price=parseFloat(document.getElementById('p-price').value);
+    const emoji=document.getElementById('p-emoji').value.trim()||'🛒';
+    if(!name) return toast('Product name is required.',true);
+    if(isNaN(price)||price<0) return toast('Please enter a valid price.',true);
+    const photoData=document.getElementById('p-photo-data').value||null;
+    const product={
+      id:editingProductId??nextId++,
+      name,brand:document.getElementById('p-brand').value.trim(),
+      price,cat:document.getElementById('p-cat').value,
+      tag:document.getElementById('p-tag').value.trim(),emoji,bg:getSelectedBg(),
+      photo:photoData
+    };
+    if(editingProductId!==null){
+      products=products.map(p=>p.id===editingProductId?product:p);
+      toast('✅ Product updated!');
+    } else {
+      products.push(product);
+      toast('✅ Product added!');
+    }
+    if (!saveAll()) return;
+    renderProducts(); resetProductForm();
+  });
+
+  function editProduct(id) {
+    const p=products.find(x=>x.id===id); if(!p) return;
+    editingProductId=id;
+    document.getElementById('p-name').value=p.name;
+    document.getElementById('p-brand').value=p.brand||'';
+    document.getElementById('p-price').value=p.price;
+    document.getElementById('p-cat').value=p.cat;
+    document.getElementById('p-tag').value=p.tag||'';
+    document.getElementById('p-emoji').value=p.emoji||'🛒';
+    document.querySelectorAll('.color-opt').forEach(o=>o.classList.toggle('selected',o.dataset.bg===(p.bg||'bg1')));
+    // Load photo
+    if(p.photo){
+      document.getElementById('p-photo-data').value=p.photo;
+      document.getElementById('p-photo-preview').src=p.photo;
+      document.getElementById('photo-preview-container').style.display='block';
+      document.getElementById('photo-upload-zone').style.display='none';
+    } else { clearPhoto(); }
+    document.getElementById('product-form-title').textContent='✏️ Edit Product';
+    document.getElementById('save-product-btn').textContent='💾 Update Product';
+    document.getElementById('cancel-product-btn').style.display='inline-flex';
+    document.getElementById('product-form-card').scrollIntoView({behavior:'smooth'});
+  }
+
+  function deleteProduct(id) {
+    if(!confirm('Delete this product?')) return;
+    products=products.filter(p=>p.id!==id);
+    saveAll(); renderProducts(); toast('🗑️ Product deleted.');
+  }
+
+  document.getElementById('cancel-product-btn').addEventListener('click',resetProductForm);
+  function resetProductForm() {
+    editingProductId=null;
+    ['p-name','p-brand','p-price','p-tag','p-emoji'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-cat').value='rice';
+    document.querySelectorAll('.color-opt').forEach((o,i)=>o.classList.toggle('selected',i===0));
+    document.querySelectorAll('.emoji-opt').forEach(o=>o.classList.remove('selected'));
+    clearPhoto();
+    document.getElementById('product-form-title').textContent='➕ Add New Product';
+    document.getElementById('save-product-btn').textContent='💾 Save Product';
+    document.getElementById('cancel-product-btn').style.display='none';
+  }
+
+  // ══ PHOTO UPLOAD ═══════════════════════════════════════════════════
+  document.getElementById('p-photo-input').addEventListener('change',e=>{
+    if(e.target.files[0]) handlePhotoFile(e.target.files[0]);
+  });
+  function handlePhotoFile(file) {
+    if(!file||!file.type.startsWith('image/')) return toast('Please select a valid image file.',true);
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      const img=new Image();
+      img.onload=function(){
+        const MAX=300;
+        let w=img.width,h=img.height;
+        if(w>MAX||h>MAX){
+          const ratio=Math.min(MAX/w,MAX/h);
+          w=Math.round(w*ratio); h=Math.round(h*ratio);
+        }
+        const canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        // Keep reducing quality until data fits comfortably in localStorage.
+        let quality = 0.68;
+        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+        while (dataUrl.length > 180000 && quality > 0.38) {
+          quality -= 0.06;
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        document.getElementById('p-photo-data').value=dataUrl;
+        document.getElementById('p-photo-preview').src=dataUrl;
+        document.getElementById('photo-preview-container').style.display='block';
+        document.getElementById('photo-upload-zone').style.display='none';
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function clearPhoto() {
+    document.getElementById('p-photo-data').value='';
+    document.getElementById('p-photo-preview').src='';
+    document.getElementById('photo-preview-container').style.display='none';
+    document.getElementById('photo-upload-zone').style.display='flex';
+    document.getElementById('p-photo-input').value='';
+  }
+
+  // ══ BUSINESS INFO ══════════════════════════════════════════════════
+  function loadBusinessForm() {
+    document.getElementById('b-announcement').value=business.announcement;
+    document.getElementById('b-phone').value=business.phone;
+    document.getElementById('b-email').value=business.email;
+    document.getElementById('b-address').value=business.address;
+    document.getElementById('b-hours').value=business.hours;
+  }
+  function saveBusiness() {
+    business={
+      announcement:document.getElementById('b-announcement').value.trim(),
+      phone:document.getElementById('b-phone').value.trim(),
+      email:document.getElementById('b-email').value.trim(),
+      address:document.getElementById('b-address').value.trim(),
+      hours:document.getElementById('b-hours').value.trim(),
+    };
+    saveAll(); toast('✅ Business info saved! Your website loads this data automatically.');
+  }
+  async function changePassword() {
+    const np=document.getElementById('b-newpass').value;
+    const cp=document.getElementById('b-confirmpass').value;
+    if(!np) return toast('Please enter a new password.',true);
+    if(np!==cp) return toast('Passwords do not match.',true);
+    if(np.length<6) return toast('Password must be at least 6 characters.',true);
+    adminPassHash = await sha256(np);
+    set('dd_admin_pass_hash', adminPassHash);
+    localStorage.removeItem('dd_admin_pass'); // ensure old plain-text key stays gone
+    document.getElementById('b-newpass').value='';
+    document.getElementById('b-confirmpass').value='';
+    toast('🔒 Password updated successfully!');
+  }
+
+  // ══ DELIVERY ZONES ══════════════════════════════════════════════════
+  let editingZoneId=null;
+  function renderZones() {
+    document.getElementById('zones-tbody').innerHTML=zones.map(z=>`
+      <tr>
+        <td class="emoji-big">${z.emoji}</td>
+        <td><strong>${z.city}</strong></td>
+        <td><span class="tag tag-green">⚡ ${z.eta} min avg</span></td>
+        <td style="color:var(--muted);font-size:13px">${z.zips}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="editZone(${z.id})">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteZone(${z.id})" style="margin-left:6px">🗑️</button>
+        </td>
+      </tr>`).join('');
+  }
+  document.getElementById('save-zone-btn').addEventListener('click',()=>{
+    const city=document.getElementById('z-city').value.trim();
+    const eta=parseInt(document.getElementById('z-eta').value);
+    if(!city) return toast('City name is required.',true);
+    if(isNaN(eta)||eta<1) return toast('Please enter a valid delivery time.',true);
+    const zone={id:editingZoneId??nextId++,emoji:document.getElementById('z-emoji').value.trim()||'📍',city,eta,zips:document.getElementById('z-zips').value.trim()};
+    if(editingZoneId!==null){
+      zones=zones.map(z=>z.id===editingZoneId?zone:z);
+      toast('✅ Zone updated!');
+    } else { zones.push(zone); toast('✅ Zone added!'); }
+    saveAll(); renderZones(); resetZoneForm();
+  });
+  function editZone(id) {
+    const z=zones.find(x=>x.id===id); if(!z) return;
+    editingZoneId=id;
+    document.getElementById('z-emoji').value=z.emoji;
+    document.getElementById('z-city').value=z.city;
+    document.getElementById('z-eta').value=z.eta;
+    document.getElementById('z-zips').value=z.zips;
+    document.getElementById('zone-form-title').textContent='✏️ Edit Zone';
+    document.getElementById('save-zone-btn').textContent='💾 Update Zone';
+    document.getElementById('cancel-zone-btn').style.display='inline-flex';
+  }
+  function deleteZone(id) {
+    if(!confirm('Delete this zone?')) return;
+    zones=zones.filter(z=>z.id!==id);
+    saveAll(); renderZones(); toast('🗑️ Zone deleted.');
+  }
+  document.getElementById('cancel-zone-btn').addEventListener('click',resetZoneForm);
+  function resetZoneForm() {
+    editingZoneId=null;
+    ['z-emoji','z-city','z-eta','z-zips'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('zone-form-title').textContent='➕ Add New Zone';
+    document.getElementById('save-zone-btn').textContent='💾 Save Zone';
+    document.getElementById('cancel-zone-btn').style.display='none';
+  }
+
+  // ══ TESTIMONIALS ══════════════════════════════════════════════════
+  let editingTestId=null;
+  const avClasses=['av-sa','av-gr','av-go'];
+  function renderTestimonials() {
+    const list=document.getElementById('testimonials-list');
+    if(!testimonials.length){ list.innerHTML='<p style="color:var(--muted);padding:16px">No reviews yet.</p>'; return; }
+    list.innerHTML=testimonials.map(t=>`
+      <div style="border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1">
+            <div style="color:var(--gold);font-size:14px;margin-bottom:6px">${'★'.repeat(t.rating)}${'☆'.repeat(5-t.rating)}</div>
+            <p style="font-style:italic;color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:12px">"${t.text}"</p>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:22px">${t.avatar}</span>
+              <div><div style="font-weight:700;font-size:14px">${t.name}</div><div style="font-size:12px;color:var(--muted)">${t.location}</div></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn btn-outline btn-sm" onclick="editTest(${t.id})">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteTest(${t.id})">🗑️</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('save-test-btn').addEventListener('click',()=>{
+    const name=document.getElementById('t-name').value.trim();
+    const text=document.getElementById('t-text').value.trim();
+    if(!name) return toast('Customer name is required.',true);
+    if(!text) return toast('Review text is required.',true);
+    const test={
+      id:editingTestId??nextId++,name,
+      location:document.getElementById('t-location').value.trim(),
+      text,rating:parseInt(document.getElementById('t-rating').value),
+      avatar:document.getElementById('t-avatar').value.trim()||'👤',
+      avatarClass:editingTestId!==null?(testimonials.find(x=>x.id===editingTestId)?.avatarClass||avClasses[0]):avClasses[testimonials.length%3]
+    };
+    if(editingTestId!==null){
+      testimonials=testimonials.map(t=>t.id===editingTestId?test:t);
+      toast('✅ Review updated!');
+    } else { testimonials.push(test); toast('✅ Review added!'); }
+    saveAll(); renderTestimonials(); resetTestForm();
+  });
+  function editTest(id) {
+    const t=testimonials.find(x=>x.id===id); if(!t) return;
+    editingTestId=id;
+    document.getElementById('t-name').value=t.name;
+    document.getElementById('t-location').value=t.location;
+    document.getElementById('t-text').value=t.text;
+    document.getElementById('t-rating').value=t.rating;
+    document.getElementById('t-avatar').value=t.avatar;
+    document.getElementById('test-form-title').textContent='✏️ Edit Review';
+    document.getElementById('save-test-btn').textContent='💾 Update Review';
+    document.getElementById('cancel-test-btn').style.display='inline-flex';
+  }
+  function deleteTest(id) {
+    if(!confirm('Delete this review?')) return;
+    testimonials=testimonials.filter(t=>t.id!==id);
+    saveAll(); renderTestimonials(); toast('🗑️ Review deleted.');
+  }
+  document.getElementById('cancel-test-btn').addEventListener('click',resetTestForm);
+  function resetTestForm() {
+    editingTestId=null;
+    ['t-name','t-location','t-text','t-avatar'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('t-rating').value='5';
+    document.getElementById('test-form-title').textContent='➕ Add New Review';
+    document.getElementById('save-test-btn').textContent='💾 Save Review';
+    document.getElementById('cancel-test-btn').style.display='none';
+  }
+
+  // ══ EXPORT FOR GITHUB ══════════════════════════════════════════════
+  document.getElementById('export-btn').addEventListener('click', () => {
+    const data = {
+      products: products,
+      business: business,
+      zones: zones,
+      testimonials: testimonials
+    };
+    const js = '// Auto-generated by Desi Dash Admin — commit this file to GitHub\nwindow.__SITE_DATA__ = ' + JSON.stringify(data, null, 2) + ';\n';
+    const blob = new Blob([js], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'site-data.js';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ site-data.js downloaded! Put it next to index.html and push to GitHub.');
+  });
+</script>
+</body>
+</html>
