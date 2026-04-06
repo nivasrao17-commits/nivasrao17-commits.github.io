@@ -439,28 +439,21 @@
       .navbar-left .location-btn, .navbar-right .login-btn { display: none; }
       .hamburger { display: inline-flex; }
 
-      /* Navbar wraps into two rows */
+      /* Single row: Logo | Search | Hamburger */
       .navbar-inner {
-        flex-wrap: wrap;
-        align-items: center;
-        min-height: unset;
-        padding: 8px 12px 0;
-        gap: 0;
-      }
-
-      /* Row 1: logo left, hamburger right */
-      .navbar-left {
-        order: 1 !important;
-        flex: 1 !important;
-        margin-right: 0 !important;
-      }
-      .navbar-right {
-        order: 2 !important;
-        margin-left: auto !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        min-height: 56px !important;
+        padding: 8px 12px !important;
         gap: 8px !important;
       }
 
-      /* Smaller logo on mobile */
+      /* Logo on the left */
+      .navbar-left {
+        order: 1 !important;
+        flex: 0 0 auto !important;
+        margin-right: 0 !important;
+      }
       .logo {
         font-size: 16px !important;
         border-right: none !important;
@@ -468,18 +461,28 @@
         margin-right: 0 !important;
       }
 
-      /* Row 2: search bar full width, centered */
+      /* Search in the middle, takes remaining space */
       .navbar-center {
-        order: 3 !important;
-        width: 100% !important;
-        flex: none !important;
+        order: 2 !important;
+        flex: 1 1 auto !important;
+        width: auto !important;
         justify-content: center !important;
-        padding: 8px 0 10px !important;
+        padding: 0 !important;
       }
       .nav-search {
         width: 100% !important;
         max-width: 100% !important;
-        font-size: 15px !important;
+        font-size: 14px !important;
+        height: 36px !important;
+        padding: 0 10px !important;
+      }
+
+      /* Hamburger on the right */
+      .navbar-right {
+        order: 3 !important;
+        flex: 0 0 auto !important;
+        margin-left: 0 !important;
+        gap: 8px !important;
       }
 
       .floating-cart-btn { min-height: 40px; font-size: 14px; }
