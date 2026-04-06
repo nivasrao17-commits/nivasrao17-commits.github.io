@@ -438,23 +438,49 @@
     @media (max-width: 768px) {
       .navbar-left .location-btn, .navbar-right .login-btn { display: none; }
       .hamburger { display: inline-flex; }
+
+      /* Navbar wraps into two rows */
       .navbar-inner {
-        min-height: 60px;
-        padding: 10px 12px;
         flex-wrap: wrap;
+        align-items: center;
+        min-height: unset;
+        padding: 8px 12px 0;
+        gap: 0;
+      }
+
+      /* Row 1: logo left, hamburger right */
+      .navbar-left {
+        order: 1;
+        flex: 1;
+        margin-right: 0;
+      }
+      .navbar-right {
+        order: 2;
+        margin-left: auto;
         gap: 8px;
       }
-      .navbar-left { width: auto; flex-shrink: 0; }
-      .navbar-right { margin-left: auto; }
+
+      /* Smaller logo on mobile */
+      .logo {
+        font-size: 16px;
+        border-right: none;
+        padding-right: 0;
+        margin-right: 0;
+      }
+
+      /* Row 2: search bar full width, centered */
       .navbar-center {
         order: 3;
         width: 100%;
-        padding: 0 0 8px;
+        justify-content: center;
+        padding: 8px 0 10px;
       }
       .nav-search {
-        max-width: 100%;
         width: 100%;
+        max-width: 100%;
+        font-size: 15px;
       }
+
       .floating-cart-btn { min-height: 40px; font-size: 14px; }
     }
 
