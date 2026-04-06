@@ -2419,7 +2419,8 @@ function getBrandSizeParts(value = '') {
    admin panel), then localStorage, then hardcoded defaults.
    ───────────────────────────────────────────────────────── */
 const _sd = window.__SITE_DATA__ || {};
-let _activeCat = 'all';  // track which category tab is active
+let _activeCat = 'all';       // track which category tab is active
+let _cachedProducts = null;   // products cache — set by loadAdminData
 
 /* ── Firebase init ── */
 firebase.initializeApp({
@@ -2443,6 +2444,7 @@ async function fsGet(collection, docId) {
 async function loadAdminData() {
   /* ── Products ── */
   const products = (await fsGet('site','products')) || _sd.products || DEFAULT_PRODUCTS;
+  _cachedProducts = products;   // cache for use by selectCategory
   renderProductGrid(products, _activeCat);
 
   /* ── Business info ── */
@@ -3530,7 +3532,7 @@ function selectCategory(cat) {
     const chipCat = new URLSearchParams(chip.getAttribute('href').split('?')[1]).get('cat');
     chip.classList.toggle('pano-chip-active', chipCat === cat);
   });
-  const products = lsGet('dd_products', null) || _sd.products || DEFAULT_PRODUCTS;
+  const products = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
   renderProductGrid(products, cat);
   /* Update URL without reloading */
   const newUrl = cat === 'all'
