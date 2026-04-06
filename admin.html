@@ -562,10 +562,10 @@
     const [fsProd, fsBiz, fsZones, fsTests, fsNextId] = await Promise.all([
       fsGet('products'), fsGet('business'), fsGet('zones'), fsGet('testimonials'), fsGet('next_id')
     ]);
-    products     = fsProd  || get('dd_products', null) || _sd.products || DEFAULT_PRODUCTS;
-    business     = fsBiz   || get('dd_business', null) || _sd.business || DEFAULT_BUSINESS;
-    zones        = fsZones || get('dd_zones', null)    || _sd.zones    || DEFAULT_ZONES;
-    testimonials = fsTests || get('dd_testimonials', null) || _sd.testimonials || DEFAULT_TESTIMONIALS;
+    products     = fsProd  || _sd.products || DEFAULT_PRODUCTS;
+    business     = fsBiz   || _sd.business || DEFAULT_BUSINESS;
+    zones        = fsZones || _sd.zones    || DEFAULT_ZONES;
+    testimonials = fsTests || _sd.testimonials || DEFAULT_TESTIMONIALS;
     nextId       = fsNextId || get('dd_next_id', 100);
     initAll(); // re-render everything with Firestore data
   }
