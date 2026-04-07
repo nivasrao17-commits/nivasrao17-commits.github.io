@@ -3561,7 +3561,7 @@ function selectCategory(cat) {
   );
   /* Update active state on pano-chips */
   document.querySelectorAll('.pano-chip').forEach(chip => {
-    const chipCat = new URLSearchParams(chip.getAttribute('href').split('?')[1]).get('cat');
+    const chipCat = new URLSearchParams(chip.getAttribute('href').split('?')[1]?.split('#')[0] || '').get('cat');
     chip.classList.toggle('pano-chip-active', chipCat === cat);
   });
   const products = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
@@ -3583,8 +3583,8 @@ document.querySelectorAll('.cat-tab').forEach(tab => {
 document.querySelectorAll('.pano-chip').forEach(chip => {
   chip.addEventListener('click', e => {
     e.preventDefault();
-    const params = new URLSearchParams(chip.getAttribute('href').split('?')[1] || '');
-    const cat = params.get('cat') || 'all';
+    const query = chip.getAttribute('href').split('?')[1]?.split('#')[0] || '';
+    const cat = new URLSearchParams(query).get('cat') || 'all';
     selectCategory(cat);
   });
 });
@@ -3602,7 +3602,7 @@ function applyCategoryFromQuery() {
     tab.classList.toggle('active', tab.dataset.cat === queryCat);
   });
   document.querySelectorAll('.pano-chip').forEach(chip => {
-    const chipCat = new URLSearchParams(chip.getAttribute('href').split('?')[1]).get('cat');
+    const chipCat = new URLSearchParams(chip.getAttribute('href').split('?')[1]?.split('#')[0] || '').get('cat');
     chip.classList.toggle('pano-chip-active', chipCat === queryCat);
   });
 }
