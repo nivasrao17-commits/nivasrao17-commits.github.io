@@ -553,18 +553,19 @@
 
     .hero-pano-row {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 12px;
+      flex-wrap: nowrap;
+      gap: 10px;
       overflow-x: auto;
-      padding: 16px 16px 18px;
+      overflow-y: visible;
+      padding: 14px 16px 16px;
       margin: 0 auto 24px;
       scrollbar-width: none;
       -ms-overflow-style: none;
       scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
       position: relative;
       width: 100%;
-      max-width: 1300px;
+      max-width: 100%;
       background: rgba(255,255,255,.97);
       border: 1px solid rgba(0,0,0,.08);
       border-radius: 18px;
@@ -576,18 +577,18 @@
 
     .pano-chip {
       flex: 0 0 auto;
-      min-width: 122px;
+      min-width: 80px;
       border-radius: 14px;
-      padding: 9px 11px;
+      padding: 8px 10px;
       text-align: center;
       scroll-snap-align: start;
       background: #fff;
       border: 1px solid rgba(0,0,0,.06);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 8px 18px rgba(112,96,63,.13);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 4px 10px rgba(112,96,63,.1);
       color: inherit;
       text-decoration: none;
       cursor: pointer;
-      transition: transform .16s ease, box-shadow .16s ease;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
     }
 
     .pano-chip:hover {
@@ -605,18 +606,18 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      font-size: 24px;
-      margin-bottom: 5px;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      font-size: 20px;
+      margin-bottom: 4px;
       background: #fff;
-      box-shadow: 0 5px 14px rgba(104,79,41,.18);
+      box-shadow: 0 3px 8px rgba(104,79,41,.14);
     }
 
     .pano-label {
       display: block;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       color: #333;
       white-space: nowrap;
@@ -793,9 +794,9 @@
     @media (max-width: 375px) {
       .hero-stage { padding: 100px 8px 0; }
       .hero-badge { font-size: 11px; padding: 5px 12px; }
-      .pano-chip { min-width: 100px; padding: 7px 8px; }
-      .pano-icon { width: 36px; height: 36px; font-size: 20px; }
-      .pano-label { font-size: 11px; }
+      .pano-chip { min-width: 70px; padding: 6px 7px; }
+      .pano-icon { width: 30px; height: 30px; font-size: 16px; }
+      .pano-label { font-size: 10px; }
       .trust-badges { gap: 12px; }
       .trust-badge { font-size: 12px; }
       .zip-btn { padding: 12px 20px; font-size: 14px; }
@@ -978,6 +979,26 @@
       color: var(--muted);
       font-size: 14px;
       padding: 8px 4px;
+    }
+
+    /* Full wrapping grid used when a single category is selected */
+    .cat-full-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      padding: 4px 2px 12px;
+    }
+    @media (max-width: 768px) {
+      .cat-full-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 12px;
+      }
+    }
+    @media (max-width: 400px) {
+      .cat-full-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
     }
 
     @media (max-width: 768px) {
@@ -2554,16 +2575,27 @@ function renderProductGrid(products, cat) {
   }
 
   if (cat === 'all') {
+    /* Show all categories as horizontal scroll strips */
     const allStrips = categoryMeta.map(renderCategoryStrip).join('');
     grid.innerHTML = allStrips
       ? `<div class="products-by-category">${allStrips}</div>`
       : '<p style="text-align:center;color:var(--muted);padding:40px 0">No products available yet.</p>';
   } else {
+    /* Show ALL products in this category as a full wrapping grid */
     const selectedMeta = categoryMeta.find(m => m.key === cat) || { key: cat, label: cat };
-    const oneStrip = renderCategoryStrip(selectedMeta);
-    grid.innerHTML = oneStrip
-      ? `<div class="products-by-category">${oneStrip}</div>`
-      : '<p style="text-align:center;color:var(--muted);padding:40px 0">No products in this category yet.</p>';
+    const items = products.filter(p => p.cat === selectedMeta.key);
+    if (items.length) {
+      grid.innerHTML = `<div class="products-by-category">
+        <div class="cat-strip-block" data-cat="${selectedMeta.key}">
+          <h3 class="cat-strip-title">${selectedMeta.label}</h3>
+          <div class="cat-full-grid">
+            ${items.map(renderCard).join('')}
+          </div>
+        </div>
+      </div>`;
+    } else {
+      grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 0">No products in this category yet.</p>';
+    }
   }
 
   /* Attach add-to-cart listeners after render */
