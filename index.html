@@ -1078,18 +1078,27 @@
       padding: 2px 6px; border-radius: 4px; z-index: 1;
     }
 
-    .product-info-card { padding: 8px 8px 6px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .product-info-card {
+      padding: 8px 8px 8px;
+      display: flex; flex-direction: column;
+      flex: 1;
+      min-height: 72px;
+    }
     .product-card-name  {
       font-family: var(--font-heading); font-weight: 600; font-size: 11px; color: var(--charcoal);
-      line-height: 1.3;
+      line-height: 1.35;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
       line-clamp: 2;
+      flex: 1;
     }
     .product-card-brand {
-      font-size: 10px; color: var(--muted); line-height: 1.2;
+      font-size: 10px; color: var(--muted); line-height: 1.2; margin-top: 2px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .product-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+    .product-card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 6px; flex-shrink: 0;
+    }
     .product-card-price  { font-family: var(--font-heading); font-weight: 700; font-size: 12px; color: var(--charcoal); }
 
     .add-btn {
@@ -1099,9 +1108,131 @@
       border-radius: 6px; padding: 4px 10px;
       font-size: 11px; font-family: var(--font-heading); font-weight: 700;
       cursor: pointer; transition: background .15s, color .15s;
-      letter-spacing: .5px;
+      letter-spacing: .5px; flex-shrink: 0;
     }
     .add-btn:hover { background: var(--green); color: #fff; }
+
+    /* ============================
+       PRODUCT DETAIL WINDOW
+       ============================ */
+    #product-window {
+      display: none;
+      position: fixed; inset: 0;
+      z-index: 8000;
+      background: var(--bg-light);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #product-window.open { display: block; }
+
+    .pw-navbar {
+      position: sticky; top: 0; z-index: 10;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .pw-back-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 22px; line-height: 1; color: var(--charcoal);
+      padding: 4px; display: flex; align-items: center; justify-content: center;
+    }
+    .pw-breadcrumb {
+      font-family: var(--font-body); font-size: 13px; color: var(--muted);
+      display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0;
+    }
+    .pw-breadcrumb a, .pw-breadcrumb span { color: var(--muted); text-decoration: none; white-space: nowrap; }
+    .pw-breadcrumb .pw-bc-current { color: var(--charcoal); font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+    .pw-breadcrumb .pw-bc-sep { font-size: 11px; flex-shrink: 0; }
+    .pw-cart-badge {
+      background: var(--green); color: #fff; border: none; cursor: pointer;
+      border-radius: 8px; padding: 7px 14px;
+      font-family: var(--font-heading); font-weight: 700; font-size: 13px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .pw-body { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+    .pw-main { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 36px; }
+    @media (max-width: 640px) { .pw-main { grid-template-columns: 1fr; } }
+
+    .pw-image-wrap {
+      border-radius: 16px; overflow: hidden;
+      background: #F7F7F7; border: 1px solid var(--border);
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-size: 80px; position: relative;
+    }
+    .pw-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+    .pw-info { display: flex; flex-direction: column; gap: 10px; }
+    .pw-brand-tag { font-size: 12px; color: var(--muted); font-family: var(--font-body); }
+    .pw-title { font-family: var(--font-heading); font-weight: 800; font-size: 22px; color: var(--charcoal); line-height: 1.25; }
+    .pw-size-tag {
+      display: inline-block; background: #F0F9F4; color: var(--green);
+      border: 1px solid rgba(39,142,70,.25); border-radius: 6px;
+      padding: 3px 10px; font-size: 12px; font-weight: 600;
+    }
+    .pw-price { font-family: var(--font-heading); font-weight: 800; font-size: 28px; color: var(--charcoal); }
+    .pw-price .pw-per { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+    .pw-add-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+    .pw-qty-ctrl {
+      display: flex; align-items: center; gap: 0; border: 1.5px solid var(--green);
+      border-radius: 8px; overflow: hidden;
+    }
+    .pw-qty-btn {
+      background: #fff; border: none; color: var(--green); font-size: 18px; font-weight: 700;
+      width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .pw-qty-btn:hover { background: #F0F9F4; }
+    .pw-qty-val {
+      min-width: 32px; text-align: center; font-family: var(--font-heading); font-weight: 700; font-size: 15px; color: var(--charcoal);
+    }
+    .pw-add-cart-btn {
+      flex: 1; background: var(--green); color: #fff; border: none;
+      border-radius: 8px; height: 44px; font-family: var(--font-heading); font-weight: 700; font-size: 15px;
+      cursor: pointer; transition: background .15s;
+    }
+    .pw-add-cart-btn:hover { background: var(--green-dark); }
+    .pw-divider { border: none; border-top: 1px solid var(--border); }
+    .pw-desc-title { font-family: var(--font-heading); font-weight: 700; font-size: 14px; color: var(--charcoal); margin-bottom: 6px; }
+    .pw-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* Recommended section inside product window */
+    .pw-reco-title { font-family: var(--font-heading); font-weight: 800; font-size: 18px; color: var(--charcoal); margin-bottom: 14px; }
+    .pw-reco-row {
+      display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .pw-reco-row::-webkit-scrollbar { display: none; }
+    .pw-reco-row .product-card { flex: 0 0 150px; max-width: 150px; }
+
+    /* ============================
+       SEARCH DROPDOWN
+       ============================ */
+    .search-wrap { position: relative; width: 100%; }
+    #search-dropdown {
+      display: none;
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 9999; max-height: 340px; overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    #search-dropdown.open { display: block; }
+    .sd-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #F2F2F2;
+      transition: background .1s;
+    }
+    .sd-item:last-child { border-bottom: none; }
+    .sd-item:hover { background: #F7F7F7; }
+    .sd-emoji { font-size: 22px; flex-shrink: 0; width: 32px; text-align: center; }
+    .sd-text { flex: 1; min-width: 0; }
+    .sd-name { font-family: var(--font-heading); font-weight: 600; font-size: 13px; color: var(--charcoal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sd-brand { font-size: 11px; color: var(--muted); }
+    .sd-price { font-family: var(--font-heading); font-weight: 700; font-size: 13px; color: var(--charcoal); flex-shrink: 0; }
+    .sd-no-results { padding: 20px 14px; text-align: center; color: var(--muted); font-size: 14px; }
 
     .view-all-btn {
       display: inline-block; background: var(--green); color: #fff;
@@ -1748,7 +1879,10 @@
       <button class="location-btn" id="location-btn">📍 Location</button>
     </div>
     <div class="navbar-center">
-      <input type="text" id="nav-search" class="nav-search" placeholder="🔍 Search products...">
+      <div class="search-wrap">
+        <input type="text" id="nav-search" class="nav-search" placeholder="Search products..." autocomplete="off">
+        <div id="search-dropdown"></div>
+      </div>
     </div>
     <div class="navbar-right">
       <button class="login-btn" id="login-btn">Login 👤</button>
@@ -2583,8 +2717,10 @@ function renderProductGrid(products, cat) {
     const safeSize = escapeHtml(size || '');
     const safeTag = escapeHtml(p.tag || '');
     const safeEmoji = escapeHtml(p.emoji || '🛒');
+    // Serialise product for onclick — escape quotes for HTML attribute
+    const pJson = JSON.stringify(p).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-    return `<div class="product-card" data-cat="${p.cat}">
+    return `<div class="product-card" data-cat="${p.cat}" onclick="openProductWindow(JSON.parse(this.dataset.p))" data-p="${pJson}">
       <div class="product-img-ph ${p.bg || 'bg1'}">
         ${p.tag ? `<span class="product-tag">${safeTag}</span>` : ''}
         ${p.photo ? `<img src="${p.photo}" alt="${safeName}" loading="lazy">` : safeEmoji}
@@ -2594,7 +2730,7 @@ function renderProductGrid(products, cat) {
         <div class="product-card-brand">${safeBrand}${safeSize ? ` · ${safeSize}` : ''}</div>
         <div class="product-card-footer">
           <span class="product-card-price">$${Number(p.price).toFixed(2)}</span>
-          <button class="add-btn" data-id="${p.id}" data-name="${safeName}" data-price="${p.price}" data-emoji="${safeEmoji}" data-size="${safeSize}">+ Add</button>
+          <button class="add-btn" data-id="${p.id}" data-name="${safeName}" data-price="${p.price}" data-emoji="${safeEmoji}" data-size="${safeSize}" onclick="event.stopPropagation()">+ Add</button>
         </div>
       </div>
     </div>`;
@@ -2748,6 +2884,9 @@ function cartUpdateBadge() {
   if (mmCartBtn) mmCartBtn.style.display = q > 0 ? 'flex' : 'none';
   const clearBtn = document.getElementById('clear-cart-btn');
   if (clearBtn) clearBtn.disabled = q === 0;
+  // Sync product window cart badge
+  const pwCount = document.getElementById('pw-cart-count');
+  if (pwCount) pwCount.textContent = q;
 }
 
 function cartRender() {
@@ -3471,13 +3610,7 @@ document.getElementById('ep-phone').addEventListener('input', function() {
 /* Init auth state on load */
 updateAuthUI();
 
-/* Search */
-document.getElementById('nav-search').addEventListener('input', () => {
-  const query = document.getElementById('nav-search').value.toLowerCase();
-  const products = lsGet('dd_products', null) || _sd.products || DEFAULT_PRODUCTS;
-  const filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query));
-  renderProductGrid(filtered, 'all');
-});
+/* Search — handled by the dropdown block at bottom of file */
 
 /* ─────────────────────────────────────────────────────────
    ANNOUNCEMENT BAR
@@ -3723,6 +3856,245 @@ if (!localStorage.getItem('desi_dash_delivery')) {
   document.getElementById('location-modal').style.display = 'flex';
 }
 
+</script>
+
+<!-- ============================
+     PRODUCT DETAIL WINDOW
+     ============================ -->
+<div id="product-window" role="dialog" aria-modal="true">
+  <!-- Sticky top nav with breadcrumb -->
+  <div class="pw-navbar">
+    <button class="pw-back-btn" id="pw-back-btn" aria-label="Go back">&#8592;</button>
+    <div class="pw-breadcrumb" id="pw-breadcrumb">
+      <a href="#hero">Home</a>
+      <span class="pw-bc-sep">›</span>
+      <span>Shop</span>
+      <span class="pw-bc-sep">›</span>
+      <span class="pw-bc-current" id="pw-bc-name">Product</span>
+    </div>
+    <button class="pw-cart-badge" id="pw-cart-btn">🛒 Cart (<span id="pw-cart-count">0</span>)</button>
+  </div>
+
+  <!-- Main product content -->
+  <div class="pw-body">
+    <div class="pw-main">
+      <div class="pw-image-wrap" id="pw-image-wrap"></div>
+      <div class="pw-info">
+        <div class="pw-brand-tag" id="pw-brand"></div>
+        <div class="pw-title" id="pw-title"></div>
+        <div id="pw-size-wrap"></div>
+        <div class="pw-price" id="pw-price"></div>
+        <div class="pw-add-row">
+          <div class="pw-qty-ctrl">
+            <button class="pw-qty-btn" id="pw-qty-minus">−</button>
+            <div class="pw-qty-val" id="pw-qty-val">1</div>
+            <button class="pw-qty-btn" id="pw-qty-plus">+</button>
+          </div>
+          <button class="pw-add-cart-btn" id="pw-add-cart-btn">Add to Cart</button>
+        </div>
+        <hr class="pw-divider">
+        <div class="pw-desc-title">About this product</div>
+        <div class="pw-desc" id="pw-desc"></div>
+      </div>
+    </div>
+
+    <!-- Recommended products -->
+    <div id="pw-reco-section">
+      <div class="pw-reco-title">You might also like</div>
+      <div class="pw-reco-row" id="pw-reco-row"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────
+   PRODUCT WINDOW
+   ───────────────────────────────────────────────────────── */
+let _pwQty = 1;
+let _pwProduct = null;
+
+function openProductWindow(p) {
+  _pwProduct = p;
+  _pwQty = 1;
+
+  // Breadcrumb name
+  document.getElementById('pw-bc-name').textContent = p.name || 'Product';
+
+  // Image
+  const imgWrap = document.getElementById('pw-image-wrap');
+  if (p.photo) {
+    imgWrap.innerHTML = `<img src="${escapeHtml(p.photo)}" alt="${escapeHtml(p.name || '')}">`;
+  } else {
+    imgWrap.innerHTML = `<span style="font-size:80px">${escapeHtml(p.emoji || '🛒')}</span>`;
+  }
+
+  // Info
+  const { brand, size } = getBrandSizeParts(p.brand || '');
+  document.getElementById('pw-brand').textContent = brand || '';
+  document.getElementById('pw-title').textContent = p.name || '';
+  document.getElementById('pw-price').innerHTML = `$${Number(p.price).toFixed(2)}<span class="pw-per">${size ? '/ ' + size : ''}</span>`;
+
+  const sizeWrap = document.getElementById('pw-size-wrap');
+  sizeWrap.innerHTML = size ? `<span class="pw-size-tag">📦 ${escapeHtml(size)}</span>` : '';
+
+  // Description
+  const desc = p.desc || p.description || `Fresh, authentic ${p.name || 'product'} sourced directly for the Indian community in DFW. Perfect for everyday cooking.`;
+  document.getElementById('pw-desc').textContent = desc;
+
+  // Qty reset
+  document.getElementById('pw-qty-val').textContent = '1';
+
+  // Cart count badge
+  document.getElementById('pw-cart-count').textContent = document.getElementById('cart-count').textContent;
+
+  // Recommended: same category, different product
+  const allProds = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
+  const reco = allProds.filter(r => r.cat === p.cat && r.id !== p.id).slice(0, 10);
+  const recoRow = document.getElementById('pw-reco-row');
+  if (reco.length) {
+    recoRow.innerHTML = reco.map(r => {
+      const { brand: rb, size: rs } = getBrandSizeParts(r.brand || '');
+      return `<div class="product-card" style="cursor:pointer" onclick="openProductWindow(${JSON.stringify(r).replace(/"/g, '&quot;')})">
+        <div class="product-img-ph ${r.bg || 'bg1'}">
+          ${r.photo ? `<img src="${r.photo}" alt="${escapeHtml(r.name || '')}" loading="lazy">` : escapeHtml(r.emoji || '🛒')}
+        </div>
+        <div class="product-info-card">
+          <div class="product-card-name">${escapeHtml(r.name || '')}</div>
+          <div class="product-card-brand">${escapeHtml(rb || '')}${rs ? ' · ' + escapeHtml(rs) : ''}</div>
+          <div class="product-card-footer">
+            <span class="product-card-price">$${Number(r.price).toFixed(2)}</span>
+            <button class="add-btn" onclick="event.stopPropagation();cartAdd(${r.id},'${escapeHtml(r.name||'')}',${r.price},'${escapeHtml(r.emoji||'🛒')}','${escapeHtml(rs||'')}')">+ Add</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('pw-reco-section').style.display = '';
+  } else {
+    document.getElementById('pw-reco-section').style.display = 'none';
+  }
+
+  // Show window
+  document.getElementById('product-window').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('product-window').scrollTop = 0;
+}
+
+function closeProductWindow() {
+  document.getElementById('product-window').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('pw-back-btn').addEventListener('click', closeProductWindow);
+document.getElementById('pw-cart-btn').addEventListener('click', function() {
+  closeProductWindow();
+  setTimeout(() => { document.getElementById('cart-nav-btn').click(); }, 100);
+});
+
+// Qty controls
+document.getElementById('pw-qty-minus').addEventListener('click', function() {
+  if (_pwQty > 1) { _pwQty--; document.getElementById('pw-qty-val').textContent = _pwQty; }
+});
+document.getElementById('pw-qty-plus').addEventListener('click', function() {
+  _pwQty++; document.getElementById('pw-qty-val').textContent = _pwQty;
+});
+
+// Add to cart from product window
+document.getElementById('pw-add-cart-btn').addEventListener('click', function() {
+  if (!_pwProduct) return;
+  const { size } = getBrandSizeParts(_pwProduct.brand || '');
+  for (let i = 0; i < _pwQty; i++) {
+    cartAdd(Number(_pwProduct.id), _pwProduct.name, Number(_pwProduct.price), _pwProduct.emoji || '🛒', size || '');
+  }
+  this.textContent = `✓ Added ${_pwQty > 1 ? '(' + _pwQty + ')' : ''}!`;
+  this.style.background = '#145a30';
+  document.getElementById('pw-cart-count').textContent = document.getElementById('cart-count').textContent;
+  setTimeout(() => { this.textContent = 'Add to Cart'; this.style.background = ''; }, 1800);
+});
+
+/* ─────────────────────────────────────────────────────────
+   SEARCH DROPDOWN
+   ───────────────────────────────────────────────────────── */
+const searchInput = document.getElementById('nav-search');
+const searchDropdown = document.getElementById('search-dropdown');
+
+function buildSearchDropdown(query) {
+  if (!query || query.length < 2) {
+    searchDropdown.classList.remove('open');
+    return;
+  }
+  const products = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
+  const results = products.filter(p =>
+    (p.name || '').toLowerCase().includes(query) ||
+    (p.brand || '').toLowerCase().includes(query)
+  ).slice(0, 8);
+
+  if (!results.length) {
+    searchDropdown.innerHTML = `<div class="sd-no-results">No products found for "<strong>${escapeHtml(query)}</strong>"</div>`;
+  } else {
+    searchDropdown.innerHTML = results.map(p => {
+      const { brand, size } = getBrandSizeParts(p.brand || '');
+      return `<div class="sd-item" data-id="${p.id}">
+        <div class="sd-emoji">${escapeHtml(p.emoji || '🛒')}</div>
+        <div class="sd-text">
+          <div class="sd-name">${escapeHtml(p.name || '')}</div>
+          <div class="sd-brand">${escapeHtml(brand || '')}${size ? ' · ' + escapeHtml(size) : ''}</div>
+        </div>
+        <div class="sd-price">$${Number(p.price).toFixed(2)}</div>
+      </div>`;
+    }).join('');
+
+    // Attach click handlers
+    searchDropdown.querySelectorAll('.sd-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const id = Number(this.dataset.id);
+        const prod = products.find(p => p.id === id);
+        if (prod) {
+          searchDropdown.classList.remove('open');
+          searchInput.value = '';
+          openProductWindow(prod);
+        }
+      });
+    });
+  }
+  searchDropdown.classList.add('open');
+}
+
+searchInput.addEventListener('input', function() {
+  const query = this.value.trim().toLowerCase();
+  if (query.length >= 2) {
+    buildSearchDropdown(query);
+    // Also filter main grid
+    const products = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
+    const filtered = products.filter(p =>
+      (p.name || '').toLowerCase().includes(query) ||
+      (p.brand || '').toLowerCase().includes(query)
+    );
+    renderProductGrid(filtered, 'all');
+    const shopEl = document.getElementById('shop');
+    if (shopEl) shopEl.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    searchDropdown.classList.remove('open');
+    if (!this.value) {
+      const products = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
+      renderProductGrid(products, _activeCat);
+    }
+  }
+});
+
+// Close dropdown on click outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-wrap')) {
+    searchDropdown.classList.remove('open');
+  }
+});
+
+// Close product window on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeProductWindow();
+    searchDropdown.classList.remove('open');
+  }
+});
 </script>
 
 </body>
