@@ -146,7 +146,7 @@
       left: 0;
       right: 0;
       width: 100%;
-      z-index: 1001;
+      z-index: 10001;
       overflow: hidden;
     }
 
@@ -187,7 +187,7 @@
     #navbar {
       position: fixed;
       width: 100%;
-      z-index: 1000;
+      z-index: 10000;
       background: #fff;
       border-bottom: 1px solid var(--border);
       transition: box-shadow .3s ease;
@@ -1118,18 +1118,22 @@
     #product-window {
       display: none;
       position: fixed; inset: 0;
-      z-index: 8000;
+      z-index: 9500;
       background: var(--bg-light);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      /* top padding set by JS to clear announcement bar + navbar */
+      padding-top: var(--nav-total-height, 100px);
     }
     #product-window.open { display: block; }
 
     .pw-navbar {
-      position: sticky; top: 0; z-index: 10;
+      position: sticky;
+      top: 0;          /* sticks just below the fixed main navbar */
+      z-index: 10;
       background: #fff;
       border-bottom: 1px solid var(--border);
-      padding: 12px 20px;
+      padding: 10px 16px;
       display: flex; align-items: center; gap: 10px;
     }
     .pw-back-btn {
@@ -1144,6 +1148,13 @@
     .pw-breadcrumb a, .pw-breadcrumb span { color: var(--muted); text-decoration: none; white-space: nowrap; }
     .pw-breadcrumb .pw-bc-current { color: var(--charcoal); font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
     .pw-breadcrumb .pw-bc-sep { font-size: 11px; flex-shrink: 0; }
+    .pw-bc-btn {
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-family: var(--font-body); font-size: 13px; color: var(--green);
+      font-weight: 600; text-decoration: underline; text-underline-offset: 2px;
+      white-space: nowrap;
+    }
+    .pw-bc-btn:hover { color: var(--green-dark); }
     .pw-cart-badge {
       background: var(--green); color: #fff; border: none; cursor: pointer;
       border-radius: 8px; padding: 7px 14px;
@@ -1216,7 +1227,7 @@
       position: absolute; top: calc(100% + 6px); left: 0; right: 0;
       background: #fff; border: 1px solid var(--border);
       border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
-      z-index: 9999; max-height: 340px; overflow-y: auto;
+      z-index: 10500; max-height: 340px; overflow-y: auto;
       scrollbar-width: thin;
     }
     #search-dropdown.open { display: block; }
@@ -3630,7 +3641,7 @@ function updateNavTop() {
 }
 updateNavTop();
 window.addEventListener('resize', updateNavTop);
-closeBar.addEventListener('click', () => { annBar.style.display = 'none'; updateNavTop(); });
+closeBar.addEventListener('click', () => { annBar.style.display = 'none'; updateNavTop(); calcNavHeight(); });
 
 /* ─────────────────────────────────────────────────────────
    NAVBAR
@@ -3866,9 +3877,9 @@ if (!localStorage.getItem('desi_dash_delivery')) {
   <div class="pw-navbar">
     <button class="pw-back-btn" id="pw-back-btn" aria-label="Go back">&#8592;</button>
     <div class="pw-breadcrumb" id="pw-breadcrumb">
-      <a href="#hero">Home</a>
+      <button class="pw-bc-btn" id="pw-bc-home">Home</button>
       <span class="pw-bc-sep">›</span>
-      <span>Shop</span>
+      <button class="pw-bc-btn" id="pw-bc-shop">Shop</button>
       <span class="pw-bc-sep">›</span>
       <span class="pw-bc-current" id="pw-bc-name">Product</span>
     </div>
@@ -3913,9 +3924,22 @@ if (!localStorage.getItem('desi_dash_delivery')) {
 let _pwQty = 1;
 let _pwProduct = null;
 
+function calcNavHeight() {
+  const ann = document.getElementById('announcement-bar');
+  const nav = document.getElementById('navbar');
+  const annH = (ann && ann.offsetParent !== null) ? ann.offsetHeight : 0;
+  const navH = nav ? nav.offsetHeight : 70;
+  const total = annH + navH;
+  document.documentElement.style.setProperty('--nav-total-height', total + 'px');
+  return total;
+}
+window.addEventListener('resize', calcNavHeight);
+calcNavHeight();
+
 function openProductWindow(p) {
   _pwProduct = p;
   _pwQty = 1;
+  calcNavHeight(); // Recalculate in case bar was dismissed
 
   // Breadcrumb name
   document.getElementById('pw-bc-name').textContent = p.name || 'Product';
@@ -3973,18 +3997,33 @@ function openProductWindow(p) {
     document.getElementById('pw-reco-section').style.display = 'none';
   }
 
-  // Show window
+  // Show window (body overflow stays normal; product-window scrolls internally)
   document.getElementById('product-window').classList.add('open');
-  document.body.style.overflow = 'hidden';
   document.getElementById('product-window').scrollTop = 0;
 }
 
 function closeProductWindow() {
   document.getElementById('product-window').classList.remove('open');
-  document.body.style.overflow = '';
 }
 
 document.getElementById('pw-back-btn').addEventListener('click', closeProductWindow);
+
+// Breadcrumb: Home
+document.getElementById('pw-bc-home').addEventListener('click', function() {
+  closeProductWindow();
+  setTimeout(() => {
+    document.getElementById('hero').scrollIntoView({ behavior: 'smooth' });
+  }, 60);
+});
+
+// Breadcrumb: Shop
+document.getElementById('pw-bc-shop').addEventListener('click', function() {
+  closeProductWindow();
+  setTimeout(() => {
+    document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
+  }, 60);
+});
+
 document.getElementById('pw-cart-btn').addEventListener('click', function() {
   closeProductWindow();
   setTimeout(() => { document.getElementById('cart-nav-btn').click(); }, 100);
@@ -4063,21 +4102,16 @@ searchInput.addEventListener('input', function() {
   const query = this.value.trim().toLowerCase();
   if (query.length >= 2) {
     buildSearchDropdown(query);
-    // Also filter main grid
-    const products = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
-    const filtered = products.filter(p =>
-      (p.name || '').toLowerCase().includes(query) ||
-      (p.brand || '').toLowerCase().includes(query)
-    );
-    renderProductGrid(filtered, 'all');
-    const shopEl = document.getElementById('shop');
-    if (shopEl) shopEl.scrollIntoView({ behavior: 'smooth' });
   } else {
     searchDropdown.classList.remove('open');
-    if (!this.value) {
-      const products = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
-      renderProductGrid(products, _activeCat);
-    }
+  }
+});
+
+// Clear input clears dropdown too
+searchInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    this.value = '';
+    searchDropdown.classList.remove('open');
   }
 });
 
