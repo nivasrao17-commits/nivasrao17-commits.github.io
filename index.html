@@ -245,7 +245,7 @@
 
     .floating-cart-btn {
       position: fixed;
-      left: calc(18px + env(safe-area-inset-left, 0px));
+      right: calc(18px + env(safe-area-inset-right, 0px));
       bottom: calc(18px + env(safe-area-inset-bottom, 0px));
       display: none;
       align-items: center;
@@ -382,7 +382,7 @@
       .navbar-left { margin-right: 8px; }
       .navbar-right { gap: 12px; margin-left: 14px; }
       .location-btn, .login-btn { padding: 0 10px; }
-      .floating-cart-btn { left: 14px; bottom: 14px; }
+      .floating-cart-btn { right: 14px; bottom: 14px; }
     }
 
     /* Mobile overlay */
@@ -1117,23 +1117,27 @@
        ============================ */
     #product-window {
       display: none;
-      position: fixed; inset: 0;
+      position: fixed;
+      /* Start exactly where the navbar ends — JS sets --nav-total-height */
+      top: var(--nav-total-height, 70px);
+      left: 0; right: 0; bottom: 0;
       z-index: 9500;
       background: var(--bg-light);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      /* top padding set by JS to clear announcement bar + navbar */
-      padding-top: var(--nav-total-height, 100px);
     }
     #product-window.open { display: block; }
 
     .pw-navbar {
-      /* Static — sits right at top of product window content, always below main navbar */
-      position: static;
+      /* Sticky inside product window — sticks to top of the window (already below navbar) */
+      position: sticky;
+      top: 0;
+      z-index: 20;
       background: #fff;
       border-bottom: 1px solid var(--border);
       padding: 8px 14px;
       display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
     }
     .pw-back-btn {
       background: none; border: none; cursor: pointer;
@@ -3921,10 +3925,13 @@ let _pwProduct = null;
 function calcNavHeight() {
   const ann = document.getElementById('announcement-bar');
   const nav = document.getElementById('navbar');
-  const annH = (ann && ann.offsetParent !== null) ? ann.offsetHeight : 0;
+  const annH = (ann && ann.style.display !== 'none' && ann.offsetHeight > 0) ? ann.offsetHeight : 0;
   const navH = nav ? nav.offsetHeight : 70;
   const total = annH + navH;
+  // Set CSS variable AND directly update the product window top
   document.documentElement.style.setProperty('--nav-total-height', total + 'px');
+  const pw = document.getElementById('product-window');
+  if (pw) pw.style.top = total + 'px';
   return total;
 }
 window.addEventListener('resize', calcNavHeight);
@@ -3988,9 +3995,12 @@ function openProductWindow(p) {
     document.getElementById('pw-reco-section').style.display = 'none';
   }
 
-  // Show window (body overflow stays normal; product-window scrolls internally)
-  document.getElementById('product-window').classList.add('open');
-  document.getElementById('product-window').scrollTop = 0;
+  // Recalculate navbar height (in case announcement bar was dismissed)
+  calcNavHeight();
+  // Show window
+  const pw = document.getElementById('product-window');
+  pw.classList.add('open');
+  pw.scrollTop = 0;
 }
 
 function closeProductWindow() {
