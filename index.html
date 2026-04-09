@@ -1115,109 +1115,173 @@
     /* ============================
        PRODUCT DETAIL WINDOW
        ============================ */
+    /* ============================
+       PRODUCT WINDOW — Blinkit style
+       ============================ */
     #product-window {
       display: none;
       position: fixed;
-      /* Start exactly where the navbar ends — JS sets --nav-total-height */
       top: var(--nav-total-height, 70px);
       left: 0; right: 0; bottom: 0;
       z-index: 9500;
-      background: var(--bg-light);
+      background: #fff;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
     #product-window.open { display: block; }
 
+    /* Sticky mini breadcrumb bar */
     .pw-navbar {
-      /* Sticky inside product window — sticks to top of the window (already below navbar) */
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: #fff;
-      border-bottom: 1px solid var(--border);
-      padding: 8px 14px;
+      position: sticky; top: 0; z-index: 20;
+      background: #fff; border-bottom: 1px solid #f0f0f0;
+      padding: 9px 20px;
       display: flex; align-items: center; gap: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
     }
     .pw-back-btn {
       background: none; border: none; cursor: pointer;
-      font-size: 20px; line-height: 1; color: var(--charcoal);
-      padding: 2px 4px; display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      font-size: 20px; color: #333; padding: 2px 6px 2px 0;
+      display: flex; align-items: center; flex-shrink: 0; line-height: 1;
     }
     .pw-breadcrumb {
-      font-family: var(--font-body); font-size: 12px; color: var(--muted);
-      display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0;
+      font-size: 13px; color: #888;
+      display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0; flex-wrap: nowrap;
     }
-    .pw-breadcrumb span { color: var(--muted); white-space: nowrap; }
-    .pw-breadcrumb .pw-bc-current {
-      color: var(--charcoal); font-weight: 600;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .pw-breadcrumb .pw-bc-sep { font-size: 10px; flex-shrink: 0; color: #bbb; }
     .pw-bc-btn {
       background: none; border: none; padding: 0; cursor: pointer;
-      font-family: var(--font-body); font-size: 12px; color: var(--green);
-      font-weight: 600; text-decoration: underline; text-underline-offset: 2px;
+      font-size: 13px; color: #555; font-family: var(--font-body);
       white-space: nowrap; line-height: 1;
     }
-    .pw-bc-btn:hover { color: var(--green-dark); }
+    .pw-bc-btn:hover { color: var(--green); text-decoration: underline; }
+    .pw-bc-sep { color: #bbb; font-size: 12px; flex-shrink: 0; }
+    .pw-bc-current { color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
 
-    .pw-body { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+    /* Content wrapper */
+    .pw-content { max-width: 1100px; margin: 0 auto; padding: 28px 24px 80px; }
 
-    .pw-main { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 36px; }
-    @media (max-width: 640px) { .pw-main { grid-template-columns: 1fr; } }
-
-    .pw-image-wrap {
-      border-radius: 16px; overflow: hidden;
-      background: #F7F7F7; border: 1px solid var(--border);
-      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-      font-size: 80px; position: relative;
+    /* Two-column: image left, info right */
+    .pw-cols {
+      display: grid; grid-template-columns: 52% 1fr; gap: 48px; align-items: start;
     }
-    .pw-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    @media (max-width: 720px) { .pw-cols { grid-template-columns: 1fr; gap: 20px; } }
 
-    .pw-info { display: flex; flex-direction: column; gap: 10px; }
-    .pw-brand-tag { font-size: 12px; color: var(--muted); font-family: var(--font-body); }
-    .pw-title { font-family: var(--font-heading); font-weight: 800; font-size: 22px; color: var(--charcoal); line-height: 1.25; }
-    .pw-size-tag {
-      display: inline-block; background: #F0F9F4; color: var(--green);
-      border: 1px solid rgba(39,142,70,.25); border-radius: 6px;
-      padding: 3px 10px; font-size: 12px; font-weight: 600;
+    /* Left: Image */
+    .pw-img-section {}
+    .pw-img-main {
+      width: 100%; aspect-ratio: 1;
+      background: #fff; border: 1px solid #f0f0f0; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 110px; overflow: hidden;
     }
-    .pw-price { font-family: var(--font-heading); font-weight: 800; font-size: 28px; color: var(--charcoal); }
-    .pw-price .pw-per { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 4px; }
-    .pw-add-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+    .pw-img-main img { width: 100%; height: 100%; object-fit: contain; padding: 12px; box-sizing: border-box; }
+
+    /* Right: Info */
+    .pw-info-section { display: flex; flex-direction: column; gap: 0; }
+
+    /* Inline breadcrumb inside info panel */
+    .pw-inline-crumb {
+      font-size: 13px; color: #888;
+      display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .pw-ic-btn {
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-size: 13px; color: #555; font-family: var(--font-body);
+    }
+    .pw-ic-btn:hover { color: var(--green); text-decoration: underline; }
+    .pw-ic-sep { color: #bbb; }
+    .pw-ic-current { color: #888; }
+
+    .pw-name {
+      font-family: var(--font-heading); font-weight: 700;
+      font-size: 22px; color: #1C1C1C; line-height: 1.3; margin-bottom: 8px;
+    }
+    .pw-weight-line {
+      font-size: 14px; color: #666; margin-bottom: 14px;
+      padding-bottom: 16px; border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* Price row: price left, qty+button right */
+    .pw-price-add-row {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 16px; margin-bottom: 6px;
+    }
+    .pw-price-left {}
+    .pw-price-main {
+      font-family: var(--font-heading); font-weight: 800;
+      font-size: 26px; color: #1C1C1C;
+      display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .pw-price-main .pw-off {
+      font-size: 11px; color: #fff; font-weight: 700;
+      background: #3986FE; border-radius: 4px; padding: 2px 7px;
+    }
+    .pw-tax-note { font-size: 12px; color: #999; }
+
+    /* Qty + Add to Cart */
+    .pw-add-section { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
     .pw-qty-ctrl {
-      display: flex; align-items: center; gap: 0; border: 1.5px solid var(--green);
-      border-radius: 8px; overflow: hidden;
+      display: flex; align-items: center;
+      border: 1.5px solid var(--green); border-radius: 8px; overflow: hidden;
     }
     .pw-qty-btn {
-      background: #fff; border: none; color: var(--green); font-size: 18px; font-weight: 700;
-      width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background .15s;
+      background: #fff; border: none; color: var(--green);
+      font-size: 18px; font-weight: 700;
+      width: 34px; height: 34px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .12s;
     }
     .pw-qty-btn:hover { background: #F0F9F4; }
     .pw-qty-val {
-      min-width: 32px; text-align: center; font-family: var(--font-heading); font-weight: 700; font-size: 15px; color: var(--charcoal);
+      min-width: 28px; text-align: center;
+      font-family: var(--font-heading); font-weight: 700; font-size: 14px; color: #1C1C1C;
     }
     .pw-add-cart-btn {
-      flex: 1; background: var(--green); color: #fff; border: none;
-      border-radius: 8px; height: 44px; font-family: var(--font-heading); font-weight: 700; font-size: 15px;
-      cursor: pointer; transition: background .15s;
+      background: var(--green); color: #fff; border: none;
+      border-radius: 8px; padding: 11px 26px;
+      font-family: var(--font-heading); font-weight: 700; font-size: 15px;
+      cursor: pointer; transition: background .12s; white-space: nowrap;
     }
     .pw-add-cart-btn:hover { background: var(--green-dark); }
-    .pw-divider { border: none; border-top: 1px solid var(--border); }
-    .pw-desc-title { font-family: var(--font-heading); font-weight: 700; font-size: 14px; color: var(--charcoal); margin-bottom: 6px; }
-    .pw-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
 
-    /* Recommended section inside product window */
-    .pw-reco-title { font-family: var(--font-heading); font-weight: 800; font-size: 18px; color: var(--charcoal); margin-bottom: 14px; }
+    /* Why shop section */
+    .pw-why-section { margin-top: 28px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+    .pw-why-title { font-family: var(--font-heading); font-weight: 700; font-size: 16px; color: #1C1C1C; margin-bottom: 16px; }
+    .pw-why-list { display: flex; flex-direction: column; gap: 14px; }
+    .pw-why-item { display: flex; align-items: flex-start; gap: 14px; }
+    .pw-why-icon {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: #FFF8E7; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .pw-why-text strong {
+      display: block; font-family: var(--font-heading); font-weight: 700;
+      font-size: 14px; color: #1C1C1C; margin-bottom: 2px;
+    }
+    .pw-why-text span { font-size: 13px; color: #666; line-height: 1.45; }
+
+    /* Product details section */
+    .pw-details-section {
+      margin-top: 32px; padding-top: 24px;
+      border-top: 8px solid #f4f4f4;
+    }
+    .pw-details-title { font-family: var(--font-heading); font-weight: 700; font-size: 18px; color: #1C1C1C; margin-bottom: 16px; }
+    .pw-details-table { width: 100%; border-collapse: collapse; }
+    .pw-details-table tr { border-bottom: 1px solid #f4f4f4; }
+    .pw-details-table td { padding: 11px 0; font-size: 14px; vertical-align: top; }
+    .pw-details-table td:first-child { color: #999; width: 160px; }
+    .pw-details-table td:last-child { color: #1C1C1C; font-weight: 500; }
+
+    /* Recommended */
+    .pw-reco-section { margin-top: 32px; padding-top: 24px; border-top: 8px solid #f4f4f4; }
+    .pw-reco-title { font-family: var(--font-heading); font-weight: 700; font-size: 18px; color: #1C1C1C; margin-bottom: 16px; }
     .pw-reco-row {
       display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;
       scrollbar-width: none; -ms-overflow-style: none;
     }
     .pw-reco-row::-webkit-scrollbar { display: none; }
-    .pw-reco-row .product-card { flex: 0 0 150px; max-width: 150px; }
+    .pw-reco-row .product-card { flex: 0 0 160px; max-width: 160px; }
 
     /* ============================
        SEARCH DROPDOWN
@@ -3872,47 +3936,104 @@ if (!localStorage.getItem('desi_dash_delivery')) {
      PRODUCT DETAIL WINDOW
      ============================ -->
 <div id="product-window" role="dialog" aria-modal="true">
-  <!-- Sticky top nav with breadcrumb -->
+
+  <!-- Sticky top breadcrumb bar -->
   <div class="pw-navbar">
     <button class="pw-back-btn" id="pw-back-btn" aria-label="Go back">&#8592;</button>
-    <div class="pw-breadcrumb" id="pw-breadcrumb">
+    <div class="pw-breadcrumb">
       <button class="pw-bc-btn" id="pw-bc-home">Home</button>
-      <span class="pw-bc-sep">›</span>
+      <span class="pw-bc-sep">/</span>
       <button class="pw-bc-btn" id="pw-bc-shop">Shop</button>
-      <span class="pw-bc-sep">›</span>
+      <span class="pw-bc-sep">/</span>
       <span class="pw-bc-current" id="pw-bc-name">Product</span>
     </div>
   </div>
 
-  <!-- Main product content -->
-  <div class="pw-body">
-    <div class="pw-main">
-      <div class="pw-image-wrap" id="pw-image-wrap"></div>
-      <div class="pw-info">
-        <div class="pw-brand-tag" id="pw-brand"></div>
-        <div class="pw-title" id="pw-title"></div>
-        <div id="pw-size-wrap"></div>
-        <div class="pw-price" id="pw-price"></div>
-        <div class="pw-add-row">
-          <div class="pw-qty-ctrl">
-            <button class="pw-qty-btn" id="pw-qty-minus">−</button>
-            <div class="pw-qty-val" id="pw-qty-val">1</div>
-            <button class="pw-qty-btn" id="pw-qty-plus">+</button>
-          </div>
-          <button class="pw-add-cart-btn" id="pw-add-cart-btn">Add to Cart</button>
-        </div>
-        <hr class="pw-divider">
-        <div class="pw-desc-title">About this product</div>
-        <div class="pw-desc" id="pw-desc"></div>
+  <div class="pw-content">
+
+    <!-- Two columns: image left, info right -->
+    <div class="pw-cols">
+
+      <!-- LEFT: Product image -->
+      <div class="pw-img-section">
+        <div class="pw-img-main" id="pw-image-wrap"></div>
       </div>
+
+      <!-- RIGHT: Product info -->
+      <div class="pw-info-section">
+
+        <!-- Inline breadcrumb (like Blinkit) -->
+        <div class="pw-inline-crumb">
+          <button class="pw-ic-btn" id="pw-ic-home-btn">Home</button>
+          <span class="pw-ic-sep">/</span>
+          <button class="pw-ic-btn" id="pw-ic-cat"></button>
+          <span class="pw-ic-sep">/</span>
+          <span class="pw-ic-current" id="pw-ic-name"></span>
+        </div>
+
+        <div class="pw-name" id="pw-title"></div>
+        <div class="pw-weight-line" id="pw-brand"></div>
+
+        <!-- Price left, Qty + Add to Cart right -->
+        <div class="pw-price-add-row">
+          <div class="pw-price-left">
+            <div class="pw-price-main" id="pw-price"></div>
+            <div class="pw-tax-note">Inclusive of all applicable taxes</div>
+          </div>
+          <div class="pw-add-section">
+            <div class="pw-qty-ctrl">
+              <button class="pw-qty-btn" id="pw-qty-minus">−</button>
+              <div class="pw-qty-val" id="pw-qty-val">1</div>
+              <button class="pw-qty-btn" id="pw-qty-plus">+</button>
+            </div>
+            <button class="pw-add-cart-btn" id="pw-add-cart-btn">Add to cart</button>
+          </div>
+        </div>
+
+        <!-- Why shop from Desi Dash -->
+        <div class="pw-why-section">
+          <div class="pw-why-title">Why shop from Desi Dash?</div>
+          <div class="pw-why-list">
+            <div class="pw-why-item">
+              <div class="pw-why-icon">⚡</div>
+              <div class="pw-why-text">
+                <strong>Under 90 min Delivery</strong>
+                <span>Get your Indian groceries delivered to your doorstep — fast, every time.</span>
+              </div>
+            </div>
+            <div class="pw-why-item">
+              <div class="pw-why-icon">🏷️</div>
+              <div class="pw-why-text">
+                <strong>Best Prices & Fresh Stock</strong>
+                <span>Authentic Indian brands at great prices, sourced fresh every week.</span>
+              </div>
+            </div>
+            <div class="pw-why-item">
+              <div class="pw-why-icon">🛒</div>
+              <div class="pw-why-text">
+                <strong>Wide Assortment</strong>
+                <span>10,000+ Indian grocery products across rice, dals, spices, snacks & more.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end info -->
+    </div><!-- end pw-cols -->
+
+    <!-- Product Details table -->
+    <div class="pw-details-section" id="pw-details-section">
+      <div class="pw-details-title">Product Details</div>
+      <table class="pw-details-table" id="pw-details-table"></table>
     </div>
 
     <!-- Recommended products -->
-    <div id="pw-reco-section">
+    <div class="pw-reco-section" id="pw-reco-section" style="display:none">
       <div class="pw-reco-title">You might also like</div>
       <div class="pw-reco-row" id="pw-reco-row"></div>
     </div>
-  </div>
+
+  </div><!-- end pw-content -->
 </div>
 
 <script>
@@ -3937,52 +4058,74 @@ function calcNavHeight() {
 window.addEventListener('resize', calcNavHeight);
 calcNavHeight();
 
+// Category label map (matches renderProductGrid)
+const _catLabels = {
+  fruits:'Fruits & Veg', rice:'Rice', flours:'Flours & Cans',
+  pickles:'Pickles', nuts:'Nuts & Pastes', masala:'Masala',
+  rte:'Ready to Eat', spices:'Spices', dals:'Dals & Oil',
+  ghee:'Ghee / Mamra', snacks:'Snacks', frozen:'Frozen', dairy:'Dairy'
+};
+
 function openProductWindow(p) {
   _pwProduct = p;
   _pwQty = 1;
-  calcNavHeight(); // Recalculate in case bar was dismissed
 
-  // Breadcrumb name
+  const { brand, size } = getBrandSizeParts(p.brand || '');
+  const catLabel = _catLabels[p.cat] || p.cat || 'Shop';
+
+  /* ── Sticky breadcrumb bar ── */
   document.getElementById('pw-bc-name').textContent = p.name || 'Product';
 
-  // Image
+  /* ── Inline breadcrumb (right panel) ── */
+  document.getElementById('pw-ic-cat').textContent = catLabel;
+  document.getElementById('pw-ic-name').textContent = p.name || 'Product';
+
+  /* ── Image ── */
   const imgWrap = document.getElementById('pw-image-wrap');
-  if (p.photo) {
-    imgWrap.innerHTML = `<img src="${escapeHtml(p.photo)}" alt="${escapeHtml(p.name || '')}">`;
-  } else {
-    imgWrap.innerHTML = `<span style="font-size:80px">${escapeHtml(p.emoji || '🛒')}</span>`;
-  }
+  imgWrap.innerHTML = p.photo
+    ? `<img src="${escapeHtml(p.photo)}" alt="${escapeHtml(p.name || '')}">`
+    : `<span style="font-size:100px">${escapeHtml(p.emoji || '🛒')}</span>`;
 
-  // Info
-  const { brand, size } = getBrandSizeParts(p.brand || '');
-  document.getElementById('pw-brand').textContent = brand || '';
+  /* ── Name ── */
   document.getElementById('pw-title').textContent = p.name || '';
-  document.getElementById('pw-price').innerHTML = `$${Number(p.price).toFixed(2)}<span class="pw-per">${size ? '/ ' + size : ''}</span>`;
 
-  const sizeWrap = document.getElementById('pw-size-wrap');
-  sizeWrap.innerHTML = size ? `<span class="pw-size-tag">📦 ${escapeHtml(size)}</span>` : '';
+  /* ── Weight / brand line ── */
+  const weightLine = [brand, size].filter(Boolean).join(' · ');
+  document.getElementById('pw-brand').textContent = weightLine || 'Desi Dash';
 
-  // Description
-  const desc = p.desc || p.description || `Fresh, authentic ${p.name || 'product'} sourced directly for the Indian community in DFW. Perfect for everyday cooking.`;
-  document.getElementById('pw-desc').textContent = desc;
+  /* ── Price ── */
+  document.getElementById('pw-price').innerHTML =
+    `<span>$${Number(p.price).toFixed(2)}</span>`;
 
-  // Qty reset
+  /* ── Qty reset ── */
   document.getElementById('pw-qty-val').textContent = '1';
 
-  // Recommended: same category, different product
+  /* ── Product Details table ── */
+  const rows = [
+    ['Category', catLabel],
+    ['Brand',    brand || 'Desi Dash'],
+    size ? ['Net Weight', size] : null,
+    p.tag ? ['Tag', p.tag] : null,
+    ['Sold by', 'Desi Dash DFW'],
+  ].filter(Boolean);
+  document.getElementById('pw-details-table').innerHTML =
+    rows.map(([k,v]) => `<tr><td>${k}</td><td>${escapeHtml(v)}</td></tr>`).join('');
+
+  /* ── Recommended products ── */
   const allProds = _cachedProducts || _sd.products || DEFAULT_PRODUCTS;
-  const reco = allProds.filter(r => r.cat === p.cat && r.id !== p.id).slice(0, 10);
+  const reco = allProds.filter(r => r.cat === p.cat && r.id !== p.id).slice(0, 12);
   const recoRow = document.getElementById('pw-reco-row');
   if (reco.length) {
     recoRow.innerHTML = reco.map(r => {
       const { brand: rb, size: rs } = getBrandSizeParts(r.brand || '');
-      return `<div class="product-card" style="cursor:pointer" onclick="openProductWindow(${JSON.stringify(r).replace(/"/g, '&quot;')})">
-        <div class="product-img-ph ${r.bg || 'bg1'}">
-          ${r.photo ? `<img src="${r.photo}" alt="${escapeHtml(r.name || '')}" loading="lazy">` : escapeHtml(r.emoji || '🛒')}
+      const rJson = JSON.stringify(r).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      return `<div class="product-card" onclick="openProductWindow(JSON.parse(this.dataset.p))" data-p="${rJson}">
+        <div class="product-img-ph ${r.bg||'bg1'}">
+          ${r.photo ? `<img src="${r.photo}" alt="${escapeHtml(r.name||'')}" loading="lazy">` : escapeHtml(r.emoji||'🛒')}
         </div>
         <div class="product-info-card">
-          <div class="product-card-name">${escapeHtml(r.name || '')}</div>
-          <div class="product-card-brand">${escapeHtml(rb || '')}${rs ? ' · ' + escapeHtml(rs) : ''}</div>
+          <div class="product-card-name">${escapeHtml(r.name||'')}</div>
+          <div class="product-card-brand">${escapeHtml(rb||'')}${rs?' · '+escapeHtml(rs):''}</div>
           <div class="product-card-footer">
             <span class="product-card-price">$${Number(r.price).toFixed(2)}</span>
             <button class="add-btn" onclick="event.stopPropagation();cartAdd(${r.id},'${escapeHtml(r.name||'')}',${r.price},'${escapeHtml(r.emoji||'🛒')}','${escapeHtml(rs||'')}')">+ Add</button>
@@ -3995,9 +4138,8 @@ function openProductWindow(p) {
     document.getElementById('pw-reco-section').style.display = 'none';
   }
 
-  // Recalculate navbar height (in case announcement bar was dismissed)
+  /* ── Show window ── */
   calcNavHeight();
-  // Show window
   const pw = document.getElementById('product-window');
   pw.classList.add('open');
   pw.scrollTop = 0;
@@ -4037,6 +4179,12 @@ document.getElementById('pw-bc-shop').addEventListener('click', function() {
 });
 
 /* pw-cart-btn removed — cart now via floating button only */
+
+// Inline breadcrumb Home button (inside right panel)
+document.getElementById('pw-ic-home-btn').addEventListener('click', function() {
+  closeProductWindow();
+  setTimeout(() => { document.getElementById('hero').scrollIntoView({ behavior: 'smooth' }); }, 60);
+});
 
 // Qty controls
 document.getElementById('pw-qty-minus').addEventListener('click', function() {
