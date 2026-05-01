@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Desi Dash — Signup Flow</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; background: #111; }
+</style>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 80 56" xmlns="http://www.w3.org/2000/svg">
+    <rect width="80" height="56" fill="#0E1523"/>
+    <rect x="24" y="8" width="32" height="40" rx="5" fill="#1A2640"/>
+    <rect x="28" y="14" width="24" height="4" rx="2" fill="#FF6B1A"/>
+    <rect x="28" y="22" width="20" height="2" rx="1" fill="#7A8190"/>
+    <rect x="28" y="27" width="20" height="2" rx="1" fill="#7A8190"/>
+    <rect x="28" y="32" width="20" height="2" rx="1" fill="#7A8190"/>
+    <rect x="28" y="39" width="24" height="5" rx="2.5" fill="#FF6B1A"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ── Desi Dash brand tokens ─────────────────────────────────────
+const SAFFRON   = '#FF6B1A';   // primary orange
+const SAFFRON_D = '#D94E00';
+const SAFFRON_L = '#FFF0E8';
+const SAFFRON_M = '#FFD5BA';
+const NAVY      = '#0E1523';   // near-black navy
+const NAVY_2    = '#1A2640';
+const GOLD      = '#F5A623';   // turmeric gold accent
+const WHITE     = '#FFFFFF';
+const OFFWHITE  = '#FAFAF8';
+const GRAY      = '#7A8190';
+const GRAY_L    = '#F4F4F2';
+const GRAY_M    = '#E6E6E2';
+const FONT      = '"Plus Jakarta Sans", -apple-system, system-ui, sans-serif';
+
+// ── Shared atoms ───────────────────────────────────────────────
+const Logo = ({ size = 36, light = false }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{
+      width: size, height: size, borderRadius: size * 0.28,
+      background: `linear-gradient(135deg, ${SAFFRON} 0%, ${GOLD} 100%)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.52, lineHeight: 1,
+    }}>⚡</div>
+    <span style={{
+      fontFamily: FONT, fontWeight: 800, fontSize: size * 0.58,
+      color: light ? WHITE : NAVY, letterSpacing: -0.5,
+    }}>Desi Dash</span>
+  </div>
+);
+
+const PrimaryBtn = ({ label, style = {} }) => (
+  <div style={{
+    height: 54, borderRadius: 14,
+    background: `linear-gradient(135deg, ${SAFFRON} 0%, ${SAFFRON_D} 100%)`,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: FONT, fontWeight: 700, fontSize: 16, color: WHITE,
+    letterSpacing: 0.1, boxShadow: `0 6px 22px ${SAFFRON}55`,
+    ...style,
+  }}>{label}</div>
+);
+
+const GhostBtn = ({ label, style = {} }) => (
+  <div style={{
+    height: 54, borderRadius: 14, border: `1.5px solid ${GRAY_M}`,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: FONT, fontWeight: 600, fontSize: 16, color: NAVY,
+    background: WHITE, ...style,
+  }}>{label}</div>
+);
+
+const InputField = ({ label, placeholder, value = '', icon }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div style={{ fontFamily: FONT, fontWeight: 600, fontSize: 13, color: GRAY }}>{label}</div>
+    <div style={{
+      height: 50, borderRadius: 12, border: `1.5px solid ${value ? SAFFRON_M : GRAY_M}`,
+      background: value ? SAFFRON_L : GRAY_L,
+      display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10,
+    }}>
+      {icon && <span style={{ color: value ? SAFFRON : GRAY, fontSize: 16, flexShrink: 0 }}>{icon}</span>}
+      <div style={{ flex: 1, fontFamily: FONT, fontSize: 15, color: value ? NAVY : '#B8BCC8' }}>
+        {value || placeholder}
+      </div>
+    </div>
+  </div>
+);
+
+const StepDots = ({ total, current }) => (
+  <div style={{ display: 'flex', gap: 5, justifyContent: 'center' }}>
+    {Array.from({ length: total }).map((_, i) => (
+      <div key={i} style={{
+        height: 4, width: i === current ? 20 : 6, borderRadius: 99,
+        background: i === current ? SAFFRON : GRAY_M,
+      }} />
+    ))}
+  </div>
+);
+
+const BackBtn = () => (
+  <div style={{
+    width: 36, height: 36, borderRadius: 99, background: GRAY_L,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  }}>
+    <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
+      <path d="M7.5 1.5L1.5 7.5l6 6" stroke={NAVY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  </div>
+);
+
+// ── SCREEN 1: Welcome / Splash ─────────────────────────────────
+function SplashScreen() {
+  return (
+    <IOSDevice dark={true}>
+      <div style={{
+        height: '100%', background: NAVY,
+        display: 'flex', flexDirection: 'column',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {/* warm radial glow */}
+        <div style={{
+          position: 'absolute', width: 420, height: 420,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${SAFFRON}28 0%, transparent 70%)`,
+          top: 60, left: -80,
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', width: 300, height: 300,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${GOLD}18 0%, transparent 70%)`,
+          top: 200, right: -40,
+          pointerEvents: 'none',
+        }} />
+
+        {/* rangoli-inspired rings */}
+        {[240, 180, 120].map((s, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            width: s, height: s, borderRadius: '50%',
+            border: `1px solid rgba(245,166,35,${0.08 - i * 0.02})`,
+            top: 100 + i * 30, left: '50%', transform: 'translateX(-50%)',
+          }} />
+        ))}
+
+        {/* status bar spacer */}
+        <div style={{ height: 60 }} />
+
+        {/* hero content */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '0 28px' }}>
+          {/* app icon */}
+          <div style={{
+            width: 96, height: 96, borderRadius: 28,
+            background: `linear-gradient(135deg, ${SAFFRON} 0%, ${GOLD} 100%)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 48, lineHeight: 1,
+            boxShadow: `0 16px 48px ${SAFFRON}55`,
+          }}>⚡</div>
+
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 38, color: WHITE, letterSpacing: -1, lineHeight: 1.1 }}>
+              Desi Dash
+            </div>
+            <div style={{ fontFamily: FONT, fontWeight: 500, fontSize: 15, color: 'rgba(255,255,255,0.45)', marginTop: 6 }}>
+              Indian groceries in 90 minutes
+            </div>
+          </div>
+
+          {/* trust pills */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}>
+            {['⚡ Under 90 min', '🛒 10,000+ products', '🇮🇳 DFW area'].map(t => (
+              <div key={t} style={{
+                padding: '6px 12px', borderRadius: 99,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.06)',
+                fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,0.6)',
+              }}>{t}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* bottom sheet */}
+        <div style={{
+          background: WHITE,
+          borderRadius: '28px 28px 0 0',
+          padding: '28px 24px 44px',
+          display: 'flex', flexDirection: 'column', gap: 12,
+        }}>
+          <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 24, color: NAVY, lineHeight: 1.2 }}>
+            Your <span style={{ color: SAFFRON }}>desi kitchen</span>,<br/>delivered fast.
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 14, color: GRAY, lineHeight: 1.6 }}>
+            Aashirvaad, MDH, Haldiram's & 9,997 more — at your door in 90 min.
+          </div>
+          <div style={{ height: 4 }} />
+          <PrimaryBtn label="Create free account" />
+          <GhostBtn label="I already have an account" />
+        </div>
+      </div>
+    </IOSDevice>
+  );
+}
+
+// ── SCREEN 2: Sign Up ──────────────────────────────────────────
+function SignUpScreen() {
+  return (
+    <IOSDevice dark={false}>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: OFFWHITE }}>
+        <div style={{ height: 60 }} />
+
+        <div style={{ padding: '20px 24px 0', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {/* top row */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+            <BackBtn />
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <StepDots total={4} current={0} />
+            </div>
+            <div style={{ width: 36 }} />
+          </div>
+
+          <Logo size={30} />
+          <div style={{ height: 4 }} />
+          <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 26, color: NAVY, lineHeight: 1.2 }}>
+            Create your account
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 14, color: GRAY }}>Free delivery on your first order 🎉</div>
+        </div>
+
+        <div style={{ flex: 1, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+          <InputField label="Full name" placeholder="e.g. Priya Sharma" value="Priya Sharma" icon="👤" />
+          <InputField label="Email address" placeholder="priya@email.com" value="priya@email.com" icon="✉️" />
+          <InputField label="Password" placeholder="8+ characters" value="••••••••••" icon="🔒" />
+          <InputField label="Delivery address" placeholder="Dallas, TX" value="1234 Oak Lane, Dallas TX" icon="📍" />
+
+          {/* divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ flex: 1, height: 1, background: GRAY_M }} />
+            <span style={{ fontFamily: FONT, fontSize: 12, color: GRAY }}>or sign up with</span>
+            <div style={{ flex: 1, height: 1, background: GRAY_M }} />
+          </div>
+
+          {/* social */}
+          <div style={{ display: 'flex', gap: 10 }}>
+            {[
+              {
+                label: 'Google',
+                icon: <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>,
+              },
+              {
+                label: 'Apple',
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill={NAVY}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98l-.09.06c-.22.15-2.19 1.28-2.17 3.82.03 3.02 2.65 4.03 2.68 4.04l-.06.26zM13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>,
+              },
+            ].map(({ label, icon }) => (
+              <div key={label} style={{
+                flex: 1, height: 48, borderRadius: 12, border: `1.5px solid ${GRAY_M}`,
+                background: WHITE, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                fontFamily: FONT, fontWeight: 600, fontSize: 14, color: NAVY,
+              }}>
+                {icon} {label}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ flex: 1 }} />
+          <PrimaryBtn label="Create Account →" />
+          <div style={{ fontFamily: FONT, fontSize: 11, color: GRAY, textAlign: 'center', lineHeight: 1.5, paddingBottom: 6 }}>
+            By signing up you agree to our <span style={{ color: SAFFRON }}>Terms</span> & <span style={{ color: SAFFRON }}>Privacy Policy</span>
+          </div>
+        </div>
+      </div>
+    </IOSDevice>
+  );
+}
+
+// ── SCREEN 3: Phone OTP ────────────────────────────────────────
+function OTPScreen() {
+  const digits = ['8', '3', '', '', '', ''];
+  return (
+    <IOSDevice dark={false}>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: OFFWHITE }}>
+        <div style={{ height: 60 }} />
+
+        <div style={{ padding: '20px 24px 0', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+            <BackBtn />
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <StepDots total={4} current={1} />
+            </div>
+            <div style={{ width: 36 }} />
+          </div>
+
+          {/* icon */}
+          <div style={{
+            width: 60, height: 60, borderRadius: 18,
+            background: SAFFRON_L,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 30, marginBottom: 4,
+          }}>📱</div>
+
+          <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 26, color: NAVY, lineHeight: 1.2 }}>
+            Verify your number
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 14, color: GRAY, lineHeight: 1.6 }}>
+            We sent a 6-digit code to <strong style={{ color: NAVY }}>+1 (940) 843-6016</strong>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* OTP boxes */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {digits.map((d, i) => (
+              <div key={i} style={{
+                flex: 1, height: 56, borderRadius: 12,
+                border: `2px solid ${d ? SAFFRON : GRAY_M}`,
+                background: d ? SAFFRON_L : GRAY_L,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: FONT, fontWeight: 800, fontSize: 22, color: NAVY,
+              }}>{d}</div>
+            ))}
+          </div>
+
+          {/* resend */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 4, fontFamily: FONT, fontSize: 14 }}>
+            <span style={{ color: GRAY }}>Didn't get it?</span>
+            <span style={{ color: SAFFRON, fontWeight: 600 }}>Resend in 0:43</span>
+          </div>
+
+          {/* promo banner */}
+          <div style={{
+            background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY_2} 100%)`,
+            borderRadius: 16, padding: '16px 18px',
+            display: 'flex', alignItems: 'center', gap: 14,
+          }}>
+            <div style={{ fontSize: 32 }}>🎁</div>
+            <div>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: WHITE }}>
+                Use code <span style={{ color: GOLD }}>FIRSTDASH</span>
+              </div>
+              <div style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>
+                Free delivery on your first order
+              </div>
+            </div>
+          </div>
+
+          <div style={{ flex: 1 }} />
+          <PrimaryBtn label="Verify & Continue" />
+        </div>
+      </div>
+    </IOSDevice>
+  );
+}
+
+// ── SCREEN 4: Delivery Zone Check ─────────────────────────────
+function ZoneScreen() {
+  return (
+    <IOSDevice dark={false}>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: OFFWHITE }}>
+        <div style={{ height: 60 }} />
+
+        {/* map area */}
+        <div style={{
+          background: `linear-gradient(160deg, #E8F0FA 0%, #D4E4F7 100%)`,
+          padding: '20px 20px 0',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* map card */}
+          <div style={{
+            width: '100%', height: 180, borderRadius: 20,
+            background: '#C8DCF5', position: 'relative', overflow: 'hidden',
+            boxShadow: '0 6px 24px rgba(14,21,35,0.12)',
+          }}>
+            {/* grid */}
+            {[40,80,120,160].map(y => <div key={y} style={{ position: 'absolute', top: y, left: 0, right: 0, height: 1, background: 'rgba(14,21,35,0.08)' }} />)}
+            {[70,140,210,280].map(x => <div key={x} style={{ position: 'absolute', left: x, top: 0, bottom: 0, width: 1, background: 'rgba(14,21,35,0.08)' }} />)}
+            {/* roads */}
+            <div style={{ position: 'absolute', top: 88, left: 0, right: 0, height: 6, background: 'rgba(255,255,255,0.55)', borderRadius: 3 }} />
+            <div style={{ position: 'absolute', left: 138, top: 0, bottom: 0, width: 6, background: 'rgba(255,255,255,0.55)', borderRadius: 3 }} />
+            {/* zone shading */}
+            <div style={{ position: 'absolute', inset: 16, borderRadius: 12, border: `2px dashed ${SAFFRON}88`, background: `${SAFFRON}0A` }} />
+            {/* pins */}
+            {[[55,45],[190,60],[80,130],[260,100],[150,150]].map(([x,y],i) => (
+              <div key={i} style={{
+                position: 'absolute', left: x-10, top: y-10,
+                width: 20, height: 20, borderRadius: 99,
+                background: i === 0 ? SAFFRON : NAVY,
+                border: '2.5px solid white',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 8,
+              }}>{i === 0 ? '📍' : ''}</div>
+            ))}
+            <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontFamily: 'monospace', fontSize: 9, color: 'rgba(14,21,35,0.35)' }}>
+              [ DFW delivery zone map ]
+            </div>
+          </div>
+          <div style={{ height: 20 }} />
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '20px 24px 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+              <StepDots total={4} current={2} />
+            </div>
+            <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 24, color: NAVY, lineHeight: 1.2 }}>
+              We deliver to you!
+            </div>
+            <div style={{ fontFamily: FONT, fontSize: 14, color: GRAY, marginTop: 4, lineHeight: 1.6 }}>
+              Confirm your zip and we'll show you nearby stock and estimated arrival.
+            </div>
+          </div>
+
+          {/* zip input */}
+          <div style={{ padding: '16px 24px 0' }}>
+            <div style={{
+              height: 54, borderRadius: 14,
+              border: `2px solid ${SAFFRON}`,
+              background: SAFFRON_L,
+              display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10,
+            }}>
+              <span style={{ fontSize: 18 }}>📮</span>
+              <div style={{ flex: 1, fontFamily: FONT, fontSize: 16, fontWeight: 600, color: NAVY }}>75240</div>
+              <div style={{
+                padding: '5px 12px', borderRadius: 99, background: SAFFRON,
+                fontFamily: FONT, fontWeight: 700, fontSize: 12, color: WHITE,
+              }}>✓ Covered</div>
+            </div>
+          </div>
+
+          {/* zone chips */}
+          <div style={{ padding: '14px 24px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { city: 'Dallas', eta: '52 min', active: true },
+              { city: 'Plano', eta: '58 min', active: false },
+              { city: 'Frisco', eta: '65 min', active: false },
+            ].map(({ city, eta, active }) => (
+              <div key={city} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '11px 14px', borderRadius: 12,
+                border: `1.5px solid ${active ? SAFFRON_M : GRAY_M}`,
+                background: active ? SAFFRON_L : WHITE,
+              }}>
+                <div style={{
+                  width: 8, height: 8, borderRadius: 99,
+                  background: active ? SAFFRON : GRAY_M,
+                }} />
+                <div style={{ flex: 1, fontFamily: FONT, fontWeight: 600, fontSize: 14, color: NAVY }}>{city}</div>
+                <div style={{ fontFamily: FONT, fontSize: 13, color: active ? SAFFRON : GRAY }}>⚡ Avg. {eta}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ flex: 1 }} />
+          <div style={{ padding: '0 24px 32px' }}>
+            <PrimaryBtn label="Confirm Location" />
+          </div>
+        </div>
+      </div>
+    </IOSDevice>
+  );
+}
+
+// ── SCREEN 5: Welcome Home ─────────────────────────────────────
+function HomeScreen() {
+  return (
+    <IOSDevice dark={false}>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: OFFWHITE }}>
+        <div style={{ height: 60 }} />
+
+        {/* header */}
+        <div style={{
+          background: `linear-gradient(145deg, ${NAVY} 0%, ${NAVY_2} 100%)`,
+          padding: '20px 22px 24px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* warm glow */}
+          <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${SAFFRON}22 0%, transparent 70%)`, top: -60, right: -20, pointerEvents: 'none' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, position: 'relative' }}>
+            <Logo size={28} light />
+            {/* cart */}
+            <div style={{
+              width: 38, height: 38, borderRadius: 99,
+              background: 'rgba(255,255,255,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 18,
+            }}>🛒</div>
+          </div>
+
+          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 2 }}>
+            Welcome back 👋
+          </div>
+          <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 22, color: WHITE, letterSpacing: -0.3 }}>
+            Namaste, Priya!
+          </div>
+
+          {/* promo strip */}
+          <div style={{
+            marginTop: 14, borderRadius: 12,
+            background: `linear-gradient(135deg, ${SAFFRON} 0%, ${GOLD} 100%)`,
+            padding: '12px 16px',
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <div style={{ fontSize: 22 }}>🎁</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: WHITE }}>First order: FREE delivery</div>
+              <div style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.75)' }}>Use code FIRSTDASH at checkout</div>
+            </div>
+            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 12, color: WHITE, opacity: 0.8 }}>Copy →</div>
+          </div>
+        </div>
+
+        {/* delivery bar */}
+        <div style={{
+          display: 'flex', alignItems: 'center', padding: '11px 20px', gap: 8,
+          background: WHITE, borderBottom: `1px solid ${GRAY_M}`,
+        }}>
+          <span style={{ fontSize: 14 }}>📍</span>
+          <div style={{ flex: 1, fontFamily: FONT, fontSize: 13, fontWeight: 600, color: NAVY }}>
+            Dallas, TX 75240
+          </div>
+          <div style={{
+            padding: '4px 10px', borderRadius: 99,
+            background: SAFFRON_L,
+            fontFamily: FONT, fontSize: 11, fontWeight: 700, color: SAFFRON,
+          }}>⚡ ~52 min</div>
+        </div>
+
+        {/* categories */}
+        <div style={{ padding: '16px 20px 8px' }}>
+          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: NAVY, marginBottom: 12 }}>Shop by category</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {[
+              { emoji: '🌾', label: 'Flours' },
+              { emoji: '🍚', label: 'Rice' },
+              { emoji: '🌶️', label: 'Masala' },
+              { emoji: '🥛', label: 'Dairy' },
+              { emoji: '🍿', label: 'Snacks' },
+              { emoji: '❄️', label: 'Frozen' },
+            ].map(({ emoji, label }) => (
+              <div key={label} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                width: 56,
+              }}>
+                <div style={{
+                  width: 50, height: 50, borderRadius: 16,
+                  background: GRAY_L,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 22,
+                  border: `1.5px solid ${GRAY_M}`,
+                }}>{emoji}</div>
+                <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, color: NAVY }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* trending */}
+        <div style={{ padding: '8px 20px 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: NAVY }}>🔥 Trending now</div>
+            <div style={{ fontFamily: FONT, fontSize: 12, color: SAFFRON, fontWeight: 600 }}>See all</div>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {[
+              { name: 'Aashirvaad Atta 10kg', price: '$18.99', tag: 'Bestseller' },
+              { name: 'MDH Chana Masala', price: '$4.49', tag: 'Top rated' },
+            ].map(({ name, price, tag }) => (
+              <div key={name} style={{
+                flex: 1, borderRadius: 14, background: WHITE,
+                border: `1.5px solid ${GRAY_M}`, overflow: 'hidden',
+              }}>
+                {/* product image placeholder */}
+                <div style={{
+                  height: 80, background: GRAY_L,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexDirection: 'column', gap: 4,
+                }}>
+                  <div style={{ fontFamily: 'monospace', fontSize: 8, color: GRAY, textAlign: 'center', padding: '0 8px' }}>
+                    [ product photo ]
+                  </div>
+                </div>
+                <div style={{ padding: '8px 10px' }}>
+                  <div style={{ display: 'inline-block', padding: '2px 7px', borderRadius: 99, background: SAFFRON_L, fontFamily: FONT, fontSize: 10, fontWeight: 700, color: SAFFRON, marginBottom: 4 }}>{tag}</div>
+                  <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: NAVY, lineHeight: 1.3 }}>{name}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                    <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 13, color: NAVY }}>{price}</div>
+                    <div style={{ width: 26, height: 26, borderRadius: 99, background: SAFFRON, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>+</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* bottom nav */}
+        <div style={{ flex: 1 }} />
+        <div style={{
+          background: WHITE, borderTop: `1px solid ${GRAY_M}`,
+          display: 'flex', padding: '10px 0 28px',
+        }}>
+          {[
+            { icon: '🏠', label: 'Home', active: true },
+            { icon: '🛒', label: 'Shop', active: false },
+            { icon: '📦', label: 'Orders', active: false },
+            { icon: '👤', label: 'Account', active: false },
+          ].map(({ icon, label, active }) => (
+            <div key={label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <div style={{ fontSize: 20 }}>{icon}</div>
+              <div style={{
+                fontFamily: FONT, fontSize: 10, fontWeight: active ? 700 : 500,
+                color: active ? SAFFRON : GRAY,
+              }}>{label}</div>
+              {active && <div style={{ width: 4, height: 4, borderRadius: 99, background: SAFFRON }} />}
+            </div>
+          ))}
+        </div>
+      </div>
+    </IOSDevice>
+  );
+}
+
+// ── App ────────────────────────────────────────────────────────
+function App() {
+  return (
+    <DesignCanvas title="Desi Dash — Signup Flow">
+      <DCSection id="s1" title="Signup Flow">
+        <DCArtboard id="a1" label="01  Welcome" width={402} height={874}>
+          <SplashScreen />
+        </DCArtboard>
+        <DCArtboard id="a2" label="02  Sign Up" width={402} height={874}>
+          <SignUpScreen />
+        </DCArtboard>
+        <DCArtboard id="a3" label="03  Verify Phone" width={402} height={874}>
+          <OTPScreen />
+        </DCArtboard>
+        <DCArtboard id="a4" label="04  Delivery Zone" width={402} height={874}>
+          <ZoneScreen />
+        </DCArtboard>
+        <DCArtboard id="a5" label="05  Home" width={402} height={874}>
+          <HomeScreen />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
